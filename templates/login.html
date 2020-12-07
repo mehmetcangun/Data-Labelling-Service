@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    
+  <form action="" method="post" name="login">
+    {{ form.csrf_token }}
+
+    <div class="field">
+      <div class="control">
+        {{ form.username(required=True, autofocus=True,
+                        class='input is-large',
+                        placeholder='your username') }}
+      </div>
+      {% for error in form.username.errors %}
+        <p class="help has-background-warning">
+            {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <div class="control">
+        {{ form.password(required=True, class='input is-large',
+                        placeholder='your password') }}
+      </div>
+      {% for error in form.password.errors %}
+        <p class="help has-background-warning">
+            {{ error }}
+        </p>
+      {% endfor %}
+    </div>
+
+    <button class="button is-block is-info is-large is-fullwidth">
+      Login
+    </button>
+  </form>
+
+    <ul>
+      <li><a href="{{ url_for('home_page') }}">back to home</a></li>
+    </ul>
+{% endblock %}
