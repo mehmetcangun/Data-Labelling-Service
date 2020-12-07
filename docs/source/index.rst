@@ -1,4 +1,4 @@
-Welcome to itucsdbNN's documentation!
+Welcome to DataLabellingService's documentation!
 =====================================
 
 :Team: Team Name
