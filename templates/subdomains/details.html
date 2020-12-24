@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}SubDomain Details{% endblock %}
+{% block content %}
+{% if data %}
+    <br />
+    <p>Name: {{ data.name }}</p>
+    <p>priority_rate: {{ data.priority_rate }}</p>
+    <p>icon: {{  data.icon }}</p>
+    <p><a href="{{ url_for('domains_details_page', key=data.domain_id) }}"class="btn">Domain Details</a></p>
+{% endif %}
+{% endblock %}

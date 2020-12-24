@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %} Domain / Index{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Index page...</h1>
+  {% for i in data %}
+    <div style="padding:10px; display:inline-block">
+      <p>Name: {{ i.name }}</p>
+      <p>Description: {{ i.description }}</p>
+      <p>priority_rate: {{ i.priority_rate }}</p>
+      <p>color: {{  i.color }}</p>
+      <p>
+        <a href="{{ url_for('domain_update_page', key=i.domain_id) }}" class="btn">Update</a>
+        <a href="{{ url_for('domain_delete_page', key=i.domain_id) }}" class="btn">Delete</a>
+        <a href="{{ url_for('domains_details_page', key=i.domain_id) }}"class="btn">Details</a>
+        <a href="{{ url_for('subdomain_add_page', domain_id=i.domain_id) }}"class="btn">ADD SUBDOMAIN</a>
+      </p>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

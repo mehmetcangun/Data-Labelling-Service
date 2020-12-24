@@ -4,19 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock %} - Data Labelling Service</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"/>
 
-  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='mytailwind.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.css" rel="stylesheet"> -->
 
 
 </head>
 <body>
-  <div class="container mx-auto bg-green-100	">
+  <div class="container mx-auto">
     {% for message in get_flashed_messages() %}
     <div class="notification is-info">{{ message }}</div>
     {% endfor %}
     
-    <a href="{{ url_for('home_page') }}" class="hover:bg-light-blue-200 hover:text-light-blue-800 group flex items-center rounded-md bg-light-blue-100 text-light-blue-600 text-sm font-medium px-4 py-2">home</a>
+    <a href="{{ url_for('home_page') }}">home</a>
+    <a href="{{ url_for('register_page') }}">register</a>
+    <br />
+    <ul style="display: inline-block;">
+      <li>Domains</li>
+      <ul style="list-style: square;">
+        <li><a href="{{ url_for('domain_index_page') }}">Index</a></li>
+        <li><a href="{{ url_for('domain_add_page') }}">Add</a></li>
+      </ul>
+    </ul>
+    <ul style="display: inline-block;">
+      <li>Subdomains</li>
+      <ul style="list-style: square;">
+        <li><a href="{{ url_for('subdomain_index_page') }}">Index</a></li>
+      </ul>
+    </ul>
+    <br />
     {% if current_user.is_active %}
       <a href="{{ url_for('logout_page') }}">Logout</a>
     {% else %}

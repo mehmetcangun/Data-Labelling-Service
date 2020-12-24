@@ -3,26 +3,12 @@ import sys
 
 import psycopg2 as dbapi2
 
-
-INIT_STATEMENTS = [
-  "CREATE TABLE IF NOT EXISTS DUMMY (NUM INTEGER)",
-  "INSERT INTO DUMMY VALUES (42)",
-]
-
-INIT_TABLES = [
-  {
-    "table_name",
-    ""
-  }
-]
-
 def initialize(url):
   with dbapi2.connect(url) as connection:
     cursor = connection.cursor()
     for statement in INIT_STATEMENTS:
       cursor.execute(statement)
     cursor.close()
-
 
 if __name__ == "__main__":
   url = os.getenv("DATABASE_URL")
