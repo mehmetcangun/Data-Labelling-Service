@@ -2,7 +2,7 @@ import os
 import sys
 
 import psycopg2 as dbapi2
-
+'''
 def initialize(url):
   with dbapi2.connect(url) as connection:
     cursor = connection.cursor()
@@ -16,3 +16,4 @@ if __name__ == "__main__":
     print("Usage: DATABASE_URL=url python dbinit.py", file=sys.stderr)
     sys.exit(1)
   initialize(url)
+'''
