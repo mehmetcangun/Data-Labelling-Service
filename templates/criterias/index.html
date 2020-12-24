@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %} Criteria / Index{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Index page...</h1>
+  {% for i in data %}
+    <div style="padding:10px; display:inline-block">
+      <p>for_contribution = {{ i.for_contribution }}</p>
+      <p>correctness      = {{ i.correctness      }}</p>
+      <p>wrongness        = {{ i.wrongness        }}</p>
+      <p>reported         = {{ i.reported         }}</p>
+      <p>extra_info       = {{ i.extra_info       }}</p>
+      <p>
+        <a href="{{ url_for('criterias_update_page', key=i.criteria_id) }}" class="btn">Update</a>
+        <a href="{{ url_for('criterias_delete_page', key=i.criteria_id) }}" class="btn">Delete</a>
+        <a href="{{ url_for('criterias_details_page', key=i.criteria_id) }}"class="btn">Details</a>
+        <a href="{{ url_for('images_add_page', criteria_id=i.criteria_id) }}"class="btn">Image Create</a>
+      </p>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

@@ -16,21 +16,36 @@
     {% for message in get_flashed_messages() %}
     <div class="notification is-info">{{ message }}</div>
     {% endfor %}
-    
+    {% if message %}
+      <h2>{{ message }}</h2>
+    {% endif %}
     <a href="{{ url_for('home_page') }}">home</a>
     <a href="{{ url_for('register_page') }}">register</a>
     <br />
     <ul style="display: inline-block;">
       <li>Domains</li>
       <ul style="list-style: square;">
-        <li><a href="{{ url_for('domain_index_page') }}">Index</a></li>
-        <li><a href="{{ url_for('domain_add_page') }}">Add</a></li>
+        <li><a href="{{ url_for('domains_index_page') }}">Index</a></li>
+        <li><a href="{{ url_for('domains_add_page') }}">Add</a></li>
       </ul>
     </ul>
     <ul style="display: inline-block;">
       <li>Subdomains</li>
       <ul style="list-style: square;">
-        <li><a href="{{ url_for('subdomain_index_page') }}">Index</a></li>
+        <li><a href="{{ url_for('subdomains_index_page') }}">Index</a></li>
+      </ul>
+    </ul>
+    <ul style="display: inline-block;">
+      <li>Criterias</li>
+      <ul style="list-style: square;">
+        <li><a href="{{ url_for('criterias_index_page') }}">Index</a></li>
+        <li><a href="{{ url_for('criterias_add_page') }}">add</a></li>
+      </ul>
+    </ul>
+    <ul style="display: inline-block;">
+      <li>Images</li>
+      <ul style="list-style: square;">
+        <li><a href="{{ url_for('images_index_page') }}">Index</a></li>
       </ul>
     </ul>
     <br />

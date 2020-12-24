@@ -1,7 +1,7 @@
 DEBUG = True
 PORT = 8080
 
-SECRET_KEY = "secret"
+SECRET_KEY = "dtlabel2021"
 WTF_CSRF_ENABLED = True
 
 PASSWORDS = {

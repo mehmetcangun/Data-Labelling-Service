@@ -7,6 +7,7 @@ messages = {
   'update' : 'The data is updated.',
   'delete' : 'The data is deleted.',
   'domains_name_key': 'Domain key should be unique, please try again.',
+  'subdomains_domain_id_fkey': 'Domain has subdomains so the domain key should not deleted.',
   'error': 'Error has been occured. Please contact administrator.'
 }
 class Database():
@@ -39,10 +40,8 @@ class Database():
     try:
       with dbapi2.connect(DB_URL) as connection:
         with connection.cursor() as cursor:
-          
           cursor.execute(query, tuple(data))
           connection.commit()
-
           if method == 'insert':
             id_ = cursor.fetchone()[0]
             return messages['insert'], id_
@@ -52,11 +51,15 @@ class Database():
             return messages['update'], 0
 
     except dbapi2.IntegrityError as e:
+      print(e.diag.constraint_name)
+      print("dance ", e.diag.message_detail)
       if e.diag.constraint_name in messages:
         return messages[e.diag.constraint_name], -1
       return messages['error'], -1
     except dbapi2.Error as e:
       print(e.pgcode)
+      print("mance: ", e.diag.message_detail)
+      return messages['error'], -1
 
   def add(self, class_):
     query = 'insert into ' + class_['table_name'] +'('

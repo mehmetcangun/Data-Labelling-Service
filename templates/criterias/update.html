@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %} Update {% endblock %}
+{% block content %}
+
+<div class="container bg-red-100">
+  <form method="post" action="{{ request.path }}" >
+    {{ data.csrf_token }}
+    <h1 class="display-4">Update</h1>
+    <hr>
+    {% if message %}
+      <h2>{{ message }}</h2>
+    {% endif %}
+    {% for field, msg in data.errors.items() %}
+      {% for i in msg: %}
+        <div class="alert alert-warning" role="alert">
+          <strong>{{ msg[i][0] }}</strong>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    <hr>
+    {{ data.form( class_ = "mt-5 table table-hover") }}
+    <div class="text-center">
+    {{ data.submit }}
+  </form>
+</div>
+
+{% endblock %}

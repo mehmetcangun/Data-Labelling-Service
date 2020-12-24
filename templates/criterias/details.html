@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}SubDomain Details{% endblock %}
+{% block content %}
+{% if data %}
+    <br />
+    <p>for_contribution = {{ data.for_contribution }}</p>
+    <p>correctness      = {{ data.correctness      }}</p>
+    <p>wrongness        = {{ data.wrongness        }}</p>
+    <p>reported         = {{ data.reported         }}</p>
+    <p>extra_info       = {{ data.extra_info       }}</p>
+{% endif %}
+{% endblock %}

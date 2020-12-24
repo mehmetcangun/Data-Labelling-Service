@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %} SubDomain / Index{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Index page...</h1>
+  {% for i in data %}
+    <div style="padding:10px; display:inline-block">
+      <p>title: {{ i.title }}</p>
+      <p>url_path: {{ i.url_path }}</p>
+      <p>most_contribution: {{  i.most_contribution }}</p>
+      <p>classification_type: {{  i.classification_type }}</p>
+      <p>user_id: {{  i.user_id }}</p>
+      <p>criteria_id: {{  i.criteria_id }}</p>
+      <img src="{{ i.url_path }}" alt="" width="150" height="150">
+      <p>
+        <a href="{{ url_for('images_update_page', key=i.image_id) }}" class="btn">Update</a>
+        <a href="{{ url_for('images_delete_page', key=i.image_id) }}" class="btn">Delete</a>
+        <a href="{{ url_for('images_details_page', key=i.image_id) }}"class="btn">Details</a>
+      </p>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

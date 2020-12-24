@@ -21,17 +21,29 @@ app.add_url_rule("/logout", view_func=views.logout_page)
 app.add_url_rule("/register_admin", view_func=views.register_page, methods=['GET', 'POST'])
 app.add_url_rule("/register_labeller", view_func=views.register_page, methods=['GET', 'POST'])
 
-app.add_url_rule("/domains", view_func=views.domain_index_page, methods=['GET'])
-app.add_url_rule("/domains_add", view_func=views.domain_add_page, methods=['GET', 'POST'])
-app.add_url_rule("/domains_update/<int:key>", view_func=views.domain_update_page, methods=['GET', 'POST'])
-app.add_url_rule("/domains_delete/<int:key>", view_func=views.domain_delete_page, methods=['GET', 'POST'])
+app.add_url_rule("/domains", view_func=views.domains_index_page, methods=['GET'])
+app.add_url_rule("/domains_add", view_func=views.domains_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/domains_update/<int:key>", view_func=views.domains_update_page, methods=['GET', 'POST'])
+app.add_url_rule("/domains_delete/<int:key>", view_func=views.domains_delete_page, methods=['GET', 'POST'])
 app.add_url_rule("/domains_details/<int:key>", view_func=views.domains_details_page, methods=['GET'])
 
-app.add_url_rule("/subdomains", view_func=views.subdomain_index_page, methods=['GET', 'POST'])
-app.add_url_rule("/subdomains_add/<int:domain_id>", view_func=views.subdomain_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/subdomains", view_func=views.subdomains_index_page, methods=['GET', 'POST'])
+app.add_url_rule("/subdomains_add/<int:domain_id>", view_func=views.subdomains_add_page, methods=['GET', 'POST'])
 app.add_url_rule("/subdomains_details/<int:key>", view_func=views.subdomains_details_page, methods=['GET'])
-app.add_url_rule("/subdomains_update/<int:key>", view_func=views.subdomain_update_page, methods=['GET', 'POST'])
-app.add_url_rule("/subdomains_delete/<int:key>", view_func=views.subdomain_delete_page, methods=['GET', 'POST'])
+app.add_url_rule("/subdomains_update/<int:key>" , view_func=views.subdomains_update_page, methods=['GET', 'POST'])
+app.add_url_rule("/subdomains_delete/<int:key>" , view_func=views.subdomains_delete_page, methods=['GET', 'POST'])
+
+app.add_url_rule("/criterias"                   , view_func=views.criterias_index_page, methods=['GET', 'POST'])
+app.add_url_rule("/criterias_add"               , view_func=views.criterias_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/criterias_details/<int:key>" , view_func=views.criterias_details_page, methods=['GET'])
+app.add_url_rule("/criterias_update/<int:key>"  , view_func=views.criterias_update_page, methods=['GET', 'POST'])
+app.add_url_rule("/criterias_delete/<int:key>"  , view_func=views.criterias_delete_page, methods=['GET', 'POST'])
+
+app.add_url_rule("/images"                          , view_func=views.images_index_page, methods=['GET', 'POST'])
+app.add_url_rule("/images_add/<int:criteria_id>"   , view_func=views.images_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/images_details/<int:key>"   , view_func=views.images_details_page, methods=['GET'])
+app.add_url_rule("/images_update/<int:key>"  , view_func=views.images_update_page, methods=['GET', 'POST'])
+app.add_url_rule("/images_delete/<int:key>"   , view_func=views.images_delete_page, methods=['GET', 'POST'])
 
 '''
 app.add_url_rule("/users")
@@ -40,26 +52,7 @@ app.add_url_rule("/contributions/<int:user_key>")
 app.add_url_rule("/delete_my_account")
 
 # images...
-app.add_url_rule("/images")
-app.add_url_rule("/image_add/<int:criteria_key>")
-app.add_url_rule("/image_update/<int:image_key>")
-app.add_url_rule("/image_details/<int:image_key>")
-app.add_url_rule("/image_delete/<int:image_key>")
 
-
-# subdomains...
-app.add_url_rule("/subdomains")
-app.add_url_rule("/subdomain_add/<int:domain_key>")
-app.add_url_rule("/subdomain_details/<int:subdomain_key>")
-app.add_url_rule("/subdomain_update/<int:subdomain_key>")
-app.add_url_rule("/subdomain_delete/<int:subdomain_key>")
-
-# criterias...
-app.add_url_rule("/criterias")
-app.add_url_rule("/criteria_add")
-app.add_url_rule("/criteria_details/<int:criteria_key>")
-app.add_url_rule("/criteria_update/<int:criteria_key>")
-app.add_url_rule("/criteria_delete/<int:criteria_key>")
 '''
 
 

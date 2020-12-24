@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}SubDomain Details{% endblock %}
+{% block content %}
+{% if data %}
+    <br />
+    <p>title: {{ data.title }}</p>
+    <p>url_path: {{ data.url_path }}</p>
+    <p>most_contribution: {{  data.most_contribution }}</p>
+    <p>classification_type: {{  data.classification_type }}</p>
+    <p>user_id: {{  data.user_id }}</p>
+    <p>criteria_id: {{  data.criteria_id }}</p>
+{% endif %}
+{% endblock %}

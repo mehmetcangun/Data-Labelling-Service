@@ -1,7 +1,7 @@
 from flask import current_app, flash, redirect, url_for, render_template, request, abort
 from user import get_user
 
-from forms import LoginForm, RegisterForm, DomainForm, SubdomainForm
+from forms import LoginForm, RegisterForm, DomainsForm, SubdomainsForm, CriteriasForm, ImagesForm
 
 from flask_login import login_user, logout_user, login_required, current_user
 from passlib.hash import pbkdf2_sha256 as hasher
@@ -49,8 +49,10 @@ def admin_required(f):
 
 
 all_forms = {
-  'domains': DomainForm,
-  'subdomains': SubdomainForm
+  'domains': DomainsForm,
+  'subdomains': SubdomainsForm,
+  'criterias': CriteriasForm,
+  'images': ImagesForm
 }
 
 from database import Database
@@ -60,74 +62,109 @@ from database import Database
 def form_operation(name, method, key=None, only_admin=True, FK=None):
   data = None
   message = ""
+
   if method == 'add':
     data = all_forms[name]()
-    data.init_key(key=key, FK=FK)
+    data.init_key(key=key, FK=FK, request = request)
     if data.validate_on_submit():
       message, key = data.save()
       if key != -1:
         return redirect(url_for(name+"_details_page", key=key))
+  
   elif method == 'update':
     data = all_forms[name]()
-    data.init_key(key=key, FK=FK)
+    data.init_key(key=key, FK=FK, request = request)
     if data.validate_on_submit():
       message, detectkey = data.save()
       if detectkey != -1:
         return redirect(url_for(name+"_details_page", key=key))
+    data.init_data()
+  
+  elif method == 'delete':
+    data = all_forms[name]()
+    data.init_key(key=key, FK=FK, request = request)
+    if request.method == "POST":
+      message, key = data.delete()
+      if key != -1:
+        flash("domain deleted")
+        return redirect(url_for(name+"_index_page"))
+  
   
   elif method == 'details':
     domain = Database()
     data = domain.select_query_by_id(key, name, name[:-1]+'_id')
-    flash("domain details")
-  elif method == 'delete':
-    if request.method == "POST":
-      delete_ = {
-        'class_name': 'domains',
-        'PK': 'domain_id',
-        'data': {
-        },
-        'where': {
-          'domain_id': key
-        }
-      }
-      domain = Database()
-      message, key = domain.delete(delete_)
-      if key != -1:
-        flash("domain deleted")
-        return redirect(url_for("home_page"))
 
+    flash("domain details")
+  
+  
   elif method == 'index':
     domain = Database()
     data = domain.select_query(name)
     flash("domain index")
+  
+  
   return render_template(name + "/" + method + ".html", data=data, message=message)
 
-def domain_index_page():
+def domains_index_page():
   return form_operation('domains', 'index')
 
-def domain_add_page():
+def domains_add_page():
   return form_operation('domains', 'add')
 
-def domain_update_page(key):
+def domains_update_page(key):
   return form_operation('domains', 'update', key=key)
 
-def domain_delete_page(key):
+def domains_delete_page(key):
   return form_operation('domains', 'delete', key=key)
   
 def domains_details_page(key):
   return form_operation('domains', 'details', key=key)
 
-def subdomain_index_page():
+def subdomains_index_page():
   return form_operation('subdomains', 'index')
 
-def subdomain_add_page(domain_id):
+def subdomains_add_page(domain_id):
   return form_operation('subdomains', 'add', FK=[('domain_id', domain_id)])
 
-def subdomain_update_page(key):
+def subdomains_update_page(key):
   return form_operation('subdomains', 'update', key=key)
 
-def subdomain_delete_page(key):
+def subdomains_delete_page(key):
   return form_operation('subdomains', 'delete', key=key)
 
 def subdomains_details_page(key):
   return form_operation('subdomains', 'details', key=key)
+
+def criterias_index_page():
+  return form_operation('criterias', 'index')
+
+def criterias_add_page():
+  #user_id = current_user.user_id
+  user_id = 2
+  return form_operation('criterias', 'add', FK=[('user_id', user_id)])
+
+def criterias_update_page(key):
+  return form_operation('criterias', 'update', key=key)
+
+def criterias_delete_page(key):
+  return form_operation('criterias', 'delete', key=key)
+
+def criterias_details_page(key):
+  return form_operation('criterias', 'details', key=key)
+
+def images_index_page():
+  return form_operation('images', 'index')
+
+def images_add_page(criteria_id):
+  #user_id = current_user.user_id
+  user_id = 2
+  return form_operation('images', 'add', FK=[('user_id', user_id), ('criteria_id', criteria_id)])
+
+def images_update_page(key):
+  return form_operation('images', 'update', key=key, )
+
+def images_delete_page(key):
+  return form_operation('images', 'delete', key=key)
+
+def images_details_page(key):
+  return form_operation('images', 'details', key=key)

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %} Update {% endblock %}
+{% block content %}
+
+<div class="container bg-red-100">
+  <form method="post" action="{{ request.path }}" enctype="multipart/form-data">
+    {{ data.csrf_token }}
+    <h1 class="display-4">Update</h1>
+    <hr>
+    {% if message %}
+      <h2>{{ message }}</h2>
+    {% endif %}
+    
+    {% if data.criterias %}
+      {% for i in data.criterias %}
+        <p style="padding:1px;">
+          {% if i.criteria_id == data.criteria_id %}
+            <input type="radio" name="selected_criteria" value="{{ i.criteria_id }}" checked>
+          {% else %}
+            <input type="radio" name="selected_criteria" value="{{ i.criteria_id }}">
+          {% endif %}
+          for_contribution = {{ i.for_contribution }}
+          correctness      = {{ i.correctness      }}
+          wrongness        = {{ i.wrongness        }}
+          reported         = {{ i.reported         }}
+          extra_info       = {{ i.extra_info       }}
+        </p>
+      {% endfor %}
+    {% endif %}
+
+    {% for field, msg in data.errors.items() %}
+      {% for i in msg: %}
+        <div class="alert alert-warning" role="alert">
+          <strong>{{ msg[i][0] }}</strong>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    <hr>
+    {{ data.form( class_ = "mt-5 table table-hover") }}
+    <div class="text-center">
+    {{ data.submit }}
+  </form>
+</div>
+
+{% endblock %}
