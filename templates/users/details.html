@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Profile Details{% endblock %}
+{% block content %}
+{% if data %}
+    <br />
+    <p>Name: {{ data.name }}</p>
+    <p>Surname: {{ data.surname }}</p>
+    <p>email: {{ data.email }}</p>
+    {% if data.usertype == 0 %}
+      <p>Admin</p>
+    {% else %}
+      <p>Labeller</p>
+    {% endif %}
+    <p>Point: {{ data.points }}</p>
+    <p>Last seen {{ data.last_seen }}</p>
+{% endif %}
+{% endblock %}

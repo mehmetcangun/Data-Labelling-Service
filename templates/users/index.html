@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+{% block title %} Domain / Index{% endblock %}
+{% block content %}
+  <div class="container flex flex-col mx-auto my-4">
+    <div class="flex my-2 gap-4">
+      <a class="bg-indigo-50 text-black px-4 py-2 " href="{{ url_for('users_add_page', usertype=9) }}">Add New Labeller</a>
+      <a class="bg-indigo-50 text-black px-4 py-2 " href="{{ url_for('users_add_page', usertype=8) }}">Add New Admin</a>
+    </div>
+    <form action="{{ request.path }}" method="get">
+      <div class="flex flex-row">
+        <h1 class="leading-8 text-4xl p-5 w-full bg-gray-50">Users</h1>
+        <div class="w-full text-right">
+            <select name="sort_by" id="" class="leading-8 my-2 p-2 bg-gray-50">
+              <option value="default">Default</option>
+              <option value="name">Name</option>
+              <option value="surname">Surname</option>
+              <option value="point">Point</option>
+            </select>  
+            <button type="submit" class="bg-green-500 text-white text-base font-medium px-2 py-1 rounded-md">Sort</button>
+        </div>
+      </div>
+      <div class="flex flex-row gap-4 my-5 mx-5 items-center">
+        <div class="space-x-2">
+          <label for="Name">Name</label>
+          <input type="search" name="name" id="">
+        </div>
+        <div class="space-x-2">
+          <label for="Surname">Surname</label>
+          <input type="search" name="surname" id="">
+        </div>
+        <div class="space-x-2">
+          <label for="Role">Role</label>
+          <select name="role">
+            <option value="-1" selected>All</option>
+            <option value="0">Admin</option>
+            <option value="1">Labeller</option>
+          </select>
+        </div>
+        <div class="">
+          <button type="submit" class="bg-yellow-500 text-white text-base font-medium px-3 py-2 rounded-md">Filter</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        <div class="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Name
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Surname
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  E-Mail
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Role
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Point
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Last Seen
+                </th>
+                <th scope="col" class="relative px-6 py-3">
+                  <span class="sr-only">Operations</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for i in data %}
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.surname }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.email }}</td>
+                {% if i.usertype == 0 %}
+                  <td class="px-6 py-4 whitespace-nowrap">Admin</td>
+                {% else %}
+                  <td class="px-6 py-4 whitespace-nowrap">Labeller</td>
+                {% endif %}
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.points }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.last_seen }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <a href="{{ url_for('users_details_page', key=i.user_id) }}"class="bg-gray-500 text-white text-base font-medium px-4 py-3 rounded-md">Details</a>
+                  <a href="{{ url_for('users_update_page', key=i.user_id) }}" class="bg-blue-500 text-white text-base font-medium px-4 py-3 rounded-md">Update</a>
+                  <a href="{{ url_for('users_delete_page', key=i.user_id) }}" class="bg-red-500 text-white text-base font-medium px-4 py-3 rounded-md">Delete</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+          
+{% endblock %}

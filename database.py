@@ -8,15 +8,19 @@ messages = {
   'delete' : 'The data is deleted.',
   'domains_name_key': 'Domain key should be unique, please try again.',
   'subdomains_domain_id_fkey': 'Domain has subdomains so the domain key should not deleted.',
+  'users_email_key': 'You must check your credentials!',
   'error': 'Error has been occured. Please contact administrator.'
 }
 class Database():
   
-  def select_query(self, name):
+  def select_query(self, name=None, query=None, data=[]):
     with dbapi2.connect(DB_URL) as connection:
       with connection.cursor() as cursor:
-        query = "select * from " + name
-        cursor.execute(query)
+        if query is None:
+          query = "select * from " + name
+          cursor.execute(query)
+        else:
+          cursor.execute(query, tuple(data))
         result = cursor.fetchall()
         header = list( cursor.description[i][0] for i in range(0, len(cursor.description)) )
         result_with_header = list()
@@ -24,7 +28,7 @@ class Database():
           result_with_header.append(dict(zip(header, i)))
     return result_with_header
   
-  def select_query_by_id(self, idd, name, where):
+  def select_query_by_id(self, idd, name, where, query=None):
     with dbapi2.connect(DB_URL) as connection:
       with connection.cursor() as cursor:
         query = "select * from "+name+" where "+where+" = %s"

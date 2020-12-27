@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block title %} Add {% endblock %}
+{% block content %}
+
+<div class="container bg-red-100">
+  <form method="post" action="{{ request.path }}" enctype="multipart/form-data">
+    {{ data.csrf_token }}
+    <h1 class="display-4">Add</h1>
+    <hr>
+    {% if message %}
+      <h2>{{ message }}</h2>
+    {% endif %}
+    
+    {% if data.subdomains %}
+      Search the labels.
+      <table>
+        Choose the subdomain from subdomains.
+        {% for i in data.subdomains %}
+        <tr>
+          <td><input type="radio" name="subdomain_id" value="{{ i['subdomain_id'] }}"></td>
+          <td><span style="padding: 0 4px;margin: 0 2px; background-color: {{i['domain_color']}};"></span>{{ i['domain_name'] }}</td>
+          <td><i class="{{ i['subdomain_icon'] }}"></i>{{ i['subdomain_name'] }}</td>
+          <td>{{ i['domain_description'] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    
+
+    {% for field, msg in data.errors.items() %}
+      {% for i in msg: %}
+        <div class="alert alert-warning" role="alert">
+          <strong>{{ msg[i][0] }}</strong>
+        </div>
+      {% endfor %}
+    {% endfor %}
+    <hr>
+    {{ data.form( class_ = "mt-5 table table-hover") }}
+    <div class="text-center">
+    {{ data.submit }}
+    {% else %}
+    <p>the subdomains are not found or all subdomains are set to the image.</p>
+    {% endif %}
+  </form>
+</div>
+
+{% endblock %}

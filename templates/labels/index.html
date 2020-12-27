@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %} Labels / Index{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Index page...</h1>
+  <a href="{{ url_for('labels_add_page', image_id=image_id) }}" class="btn">add label</a>
+  <table>
+    <thead>
+      <td>label id</td>
+    </thead>
+    {% for i in data %}
+    <tr>
+      <td>{{ i['label_id'] }}</td>
+      <td><span style="padding: 0 4px;margin: 0 2px; background-color: {{i['domain_color']}};"></span>{{ i['domain_name'] }}</td>
+      <td><i class="{{ i['subdomain_icon'] }}"></i>{{ i['subdomain_name'] }}</td>
+      <td>{{ i['domain_description'] }}</td>
+      <td>{{ i['most_contribution'] }}</td>
+      <td>{{ i['is_correct'] }}</td>
+      <td>
+        <a href="{{ url_for('labels_update_page', image_id=image_id, key=i.label_id) }}" class="btn">update</a>
+        <a href="{{ url_for('labels_delete_page', image_id=image_id, key=i.label_id) }}" class="btn">delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

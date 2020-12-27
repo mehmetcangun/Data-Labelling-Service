@@ -7,11 +7,11 @@
 
     <div class="field">
       <div class="control">
-        {{ form.username(required=True, autofocus=True,
+        {{ form.email(required=True, autofocus=True,
                         class='input is-large',
                         placeholder='your username') }}
       </div>
-      {% for error in form.username.errors %}
+      {% for error in form.email.errors %}
         <p class="help has-background-warning">
             {{ error }}
         </p>

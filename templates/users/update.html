@@ -1,13 +1,16 @@
 {% extends "layout.html" %}
-{% block title %} Register {% endblock %}
+{% block title %} Update Profile {% endblock %}
 {% block content %}
 
 <div class="container bg-red-100">
   <form method="post" action="{{ request.path }}" >
-    {{ form.csrf_token }}
-    <h1 class="display-4">Register</h1>
+    {{ data.csrf_token }}
+    <h1 class="display-4">Update</h1>
     <hr>
-    {% for field, msg in form.errors.items() %}
+    {% if message %}
+      <h2>{{ message }}</h2>
+    {% endif %}
+    {% for field, msg in data.errors.items() %}
       {% for i in msg: %}
         <div class="alert alert-warning" role="alert">
           <strong>{{ msg[i][0] }}</strong>
@@ -15,9 +18,9 @@
       {% endfor %}
     {% endfor %}
     <hr>
-    {{ form.register( class_ = "mt-5 table table-hover") }}
+    {{ data.form( class_ = "mt-5 table table-hover") }}
     <div class="text-center">
-      {{ form.submit }}
+    {{ data.submit }}
   </form>
 </div>
 

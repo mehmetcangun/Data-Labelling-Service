@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Domain Details{% endblock %}
+{% block content %}
+{% if data %}
+    <br />
+    <hr style="background:{{ data.color }}; padding:10px;" />
+    <p>Name: {{ data.name }}</p>
+    <p>Description: {{ data.description }}</p>
+    <p>priority_rate: {{ data.priority_rate }}</p>
+    <p>color: {{  data.color }}</p>
+{% endif %}
+{% endblock %}

@@ -11,3 +11,5 @@ venv/
 docs/build/
 
 .env
+
+/static/uploads/*
