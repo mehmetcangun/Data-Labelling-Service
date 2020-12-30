@@ -15,9 +15,13 @@ class User(UserMixin):
     self.email = email
     self.password = password
     self.is_admin = False
+    self.uid = None
   
   def get_id(self):
     return self.email
+  
+  def get_uid(self):
+    return self.uid
 
 def login_page():
   form = LoginForm()
@@ -41,6 +45,7 @@ def get_user(user_email):
   if user_ is not None:
     user = User(user_email, user_['password'])
     user.is_admin = True if user_['usertype'] == 0 else False
+    user.uid = user_['user_id']
     return user
   return None
 
@@ -64,6 +69,67 @@ all_forms = {
   'images': ImagesForm,
   'labels': LabelsForm,
   'users': UsersForm
+}
+
+sort_by = {
+  'users': {
+    'default': 'Default',
+    'points_asc': 'Points First Lower',
+    'points_desc': 'Points First Higher', 
+    'contribution_size_asc': 'Contribution Size Lower', 
+    'contribution_size_desc': 'Contribution Size Higher', 
+    'join_date_asc': 'Join Date Late',   
+    'join_date_desc': 'Join Date Early',  
+    'last_seen_asc': 'Last Seen Late',   
+    'last_seen_desc': 'Last Seen Early',  
+    'uname_asc': 'Name(A-Z)',       
+    'uname_desc': 'Name(Z-A)',      
+    'surname_asc': 'Surname(A-Z)',     
+    'surname_desc': 'Surname(Z-A)'
+  },
+  'domains': {
+    'default': 'Default',
+    'domain_name_asc':'Domain Name(A-Z)',
+    'domain_name_desc':'Domain Name(Z-A)',
+    'domain_priority_rate_asc':'Priority Rate(1-10)',
+    'domain_priority_rate_desc':'Priority Rate(10-1)',
+    'subdomain_length_asc':'Lower Subdomain Length',
+    'subdomain_length_desc':'Greater Subdomain Length'
+  },
+  'subdomains': {
+    'default': 'Default',
+    'domain_name_asc':'Domain Name(A-Z)',
+    'domain_name_desc':'Domain Name(Z-A)',
+    'subdomain_name_asc':'Subdomain Name(A-Z)',
+    'subdomain_name_desc':'Subdomain Name(Z-A)',
+    'subdomain_priority_rate_asc':'Priority Rate(1-10)',
+    'subdomain_priority_rate_desc':'Priority Rate(10-1)',
+    'count_images_used_asc':'Count of images used-Increasing',
+    'count_images_used_desc':'Count of images used-Decreasing'
+  },
+  'images':{},
+  'labels': {
+    'default': 'Default',
+    'domain_name_asc':'Domain Name(A-Z)',
+    'domain_name_desc':'Domain Name(Z-A)',
+    'subdomain_name_asc':'Subdomain Name(A-Z)',
+    'subdomain_name_desc':'Subdomain Name(Z-A)',
+    'is_correct_asc':'Is Correct - False First',
+    'is_correct_desc':'Is Correct - True First'
+  },
+  'criterias': {
+    'default': 'Default',
+    'uname_asc': 'Name(A-Z)',       
+    'uname_desc': 'Name(Z-A)',
+    'for_contribution_asc':'For Contribution (5.0 > -5.0)',
+    'for_contribution_desc':'For Contribution (-5.0 > 5.0)',
+    'correctness_asc':'Correctness (5.0 > -5.0)',
+    'correctness_desc':'Correctness (-5.0 > 5.0)',
+    'wrongness_asc':'Wrongness (5.0 > -5.0)',
+    'wrongness_desc':'Wrongness (-5.0 > 5.0)',
+    'count_images_used_asc':'Count of images used-Increasing',
+    'count_images_used_desc':'Count of images used-Decreasing'
+  }
 }
 
 #@login_required
@@ -95,24 +161,38 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
     if request.method == "POST":
       message, key = data.delete()
       if key != -1:
-        flash("domain deleted")
         return redirect(url_for(name+"_index_page"))
   
-  
   elif method == 'details':
-    domain = Database()
-    data = domain.select_query_by_id(key, name, name[:-1]+'_id')
-
-    flash("domain details")
-  
+    db_ = Database()
+    data = db_.select_query_by_id(key, name, name[:-1]+'_id')
   
   elif method == 'index':
-    domain = Database()
-    data = domain.select_query(name)
-    flash("domain index")
-  
-  
-  return render_template(name + "/" + method + ".html", data=data, message=message)
+    
+    sort_by_get = request.args['sort_by'] if 'sort_by' in request.args else 'default'
+    search_set = dict()
+    for i in request.args:
+      if str(i).startswith('search_'):
+        search_set[i] = request.args[i]
+    
+    print(search_set)
+
+    db_ = Database()
+    if image_id is None:
+      data = db_.select_query(name, sort_by=sort_by_get, search=search_set)
+    data = db_.select_query(name, data=(image_id, ), sort_by=sort_by_get, search=search_set)
+    
+    return render_template(name + "/" + method + ".html", 
+              data=data, 
+              message=message, 
+              image_id=image_id, 
+              title=str(name).capitalize() + " / " + str(method).capitalize(), 
+              sort_by=sort_by[name], 
+              selected_sort=sort_by_get,
+              search=search_set
+    )
+
+  return render_template(name + "/" + method + ".html", data=data, message=message, image_id=image_id, title=str(name).capitalize() + " / " + str(method).capitalize())
 
 def domains_index_page():
   return form_operation('domains', 'index')
@@ -148,8 +228,7 @@ def criterias_index_page():
   return form_operation('criterias', 'index')
 
 def criterias_add_page():
-  #user_id = current_user.user_id
-  user_id = 2
+  user_id = current_user.uid
   return form_operation('criterias', 'add', FK=[('user_id', user_id)])
 
 def criterias_update_page(key):
@@ -165,8 +244,7 @@ def images_index_page():
   return form_operation('images', 'index')
 
 def images_add_page(criteria_id):
-  #user_id = current_user.user_id
-  user_id = 2
+  user_id = current_user.uid
   return form_operation('images', 'add', FK=[('user_id', user_id), ('criteria_id', criteria_id)])
 
 def images_update_page(key):
@@ -179,35 +257,10 @@ def images_details_page(key):
   return form_operation('images', 'details', key=key)
 
 def labels_index_page(image_id):
-  
-  query = """select
-       lb.label_id as label_id,
-       d.name as domain_name,
-       sd.name as subdomain_name,
-       d.description as domain_description,
-       d.color as domain_color,
-       d.priority_rate as domain_priority_rate,
-       sd.icon as subdomain_icon,
-       img.most_contribution,
-       img.url_path,
-       lb.is_correct
-        from
-        domains as d inner join subdomains as sd on d.domain_id = sd.subdomain_id inner join
-        labels as lb on lb.subdomain_id = sd.subdomain_id inner join
-        images as img on img.image_id = lb.image_id;
-    """
-  
-  labels = Database()
-  data = labels.select_query(query=query)
-
-  message = "all is done."
-  
-  return render_template("labels/index.html", image_id = image_id, data=data, message=message)
-
-  #return form_operation('labels', 'index', FK=[('image_id', image_id)])
+  return form_operation('labels', 'index', FK=[('image_id', image_id)], image_id=image_id)
 
 def labels_add_page(image_id):
-  return form_operation('labels', 'add', FK=[('image_id', image_id)])
+  return form_operation('labels', 'add', FK=[('image_id', image_id)], image_id=image_id)
 
 def labels_update_page(image_id, key):
   return form_operation('labels', 'update', key=key, FK=[('image_id', image_id)], image_id=image_id)
@@ -217,7 +270,6 @@ def labels_delete_page(image_id, key):
 
 def labels_details_page(image_id, key):
   return form_operation('labels', 'details', key=key, FK=[('image_id', image_id)], image_id=image_id)
-
 
 def users_index_page():
   return form_operation('users', 'index')

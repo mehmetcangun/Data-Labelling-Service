@@ -14,19 +14,22 @@ from passlib.hash import pbkdf2_sha256 as hasher
 msgRequired = "The {} must be filled."
 msgLength   = "The {} has to be between {} and {}"
 
+textFieldStyle = {"class":"focus:bg-indigo-50 focus:text-black px-4 py-1 w-full text-white bg-indigo-500 rounded-lg shadow-lg text-lg"}
+submitFieldStyle = {"class":"px-6 py-3 font-bold bg-red-500 rounded-md text-white mx-96"}
+
 class LoginForm(FlaskForm):
   email = EmailField("E-Mail", validators=[DataRequired()])
   password = PasswordField("Password", validators=[DataRequired()])
 
 class Users(FlaskForm):
-  name = StringField("Name", validators=[DataRequired()])
-  surname = StringField("Surname", validators=[DataRequired()])
-  email = EmailField("E-Mail", validators=[DataRequired()])
-  password = PasswordField("Password", validators=[DataRequired(), EqualTo('password_repeat', message='Password must match.')])
-  password_repeat = PasswordField("Password Repeat", validators=[DataRequired()])
+  uname            = StringField("Name", validators=[DataRequired()], render_kw=textFieldStyle)
+  surname         = StringField("Surname", validators=[DataRequired()], render_kw=textFieldStyle)
+  email           = EmailField("E-Mail", validators=[DataRequired()], render_kw=textFieldStyle)
+  password        = PasswordField("Password", validators=[DataRequired(), EqualTo('password_repeat', message='Password must match.')], render_kw=textFieldStyle)
+  password_repeat = PasswordField("Password Repeat", validators=[DataRequired()], render_kw=textFieldStyle)
 
 class UsersEdit(FlaskForm):
-  name = StringField("Name", validators=[DataRequired()])
+  uname = StringField("Name", validators=[DataRequired()])
   surname = StringField("Surname", validators=[DataRequired()])
   email = EmailField("E-Mail", validators=[DataRequired()])
 
@@ -39,21 +42,19 @@ class UsersForm(FlaskForm):
     self.request = kwargs['request']
   
   form = FormField(Users)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
+  submit = SubmitField(render_kw=submitFieldStyle)
 
   def init_data(self):
     if self.key is not None:
       db_ = Database()
       db_data = db_.select_query_by_id(self.key, 'users', 'user_id')
-      self.form['name'].data              = db_data['name']
+      self.form['uname'].data             = db_data['uname']
       self.form['surname'].data           = db_data['surname']
       self.form['email'].data             = db_data['email']
       self.form['password'].render_kw = {
-        'required':"false",
         'disabled': "true"
       }
       self.form['password_repeat'].render_kw = {
-        'required':"false",
         'disabled': "true"
       }
   
@@ -99,44 +100,40 @@ class UsersForm(FlaskForm):
 
 class Domains(FlaskForm):
   domain_id = None
-  name = StringField("Name", validators=[DataRequired()])
+  domain_name = StringField("Name", validators=[DataRequired()], render_kw=textFieldStyle)
   description = TextAreaField(
     "Description", 
     validators = [ 
       DataRequired(message = msgRequired.format("Description")),
       Length(min=1, max=1000, message = msgLength.format("Description", 1, 1000))
-    ],
-    render_kw = { "class" : "form-control" }
-  )
-  priority_rate = RadioField(
+    ], render_kw=textFieldStyle)
+  domain_priority_rate = RadioField(
     "Priority Rate(10 higher rate than 1)",
     default = 1,
     coerce=int,
-    choices = [ x for x in range(1, 11) ],
-    render_kw = { "class" : "list-group list-group-horizontal" }
-  )
+    choices = [ x for x in range(1, 11) ], render_kw=textFieldStyle)
   color = ColorField(
     "Color", 
-    validators = [],
-    render_kw = { "class" : "form-control"}
-  )
+    validators = [], render_kw=textFieldStyle)
 
 class DomainsForm(FlaskForm):
+  key = FK = request = None
+  def __init__(self, *args, **kwargs):
+    super(DomainsForm, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+    self.FK      = kwargs['FK']
+    self.request = kwargs['request']
   
   form = FormField(Domains)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
+  submit = SubmitField(render_kw=submitFieldStyle)
   
-  key = None
-  def init_key(self, **keys):
-    self.key = keys['key']
-
   def init_data(self):
     if self.key is not None:
       domain = Database()
       domains = domain.select_query_by_id(self.key, 'domains', 'domain_id')
-      self.form['name'].data          = domains['name']
+      self.form['domain_name'].data          = domains['domain_name']
       self.form['description'].data   = domains['description']
-      self.form['priority_rate'].data = domains['priority_rate']
+      self.form['domain_priority_rate'].data = domains['domain_priority_rate']
       self.form['color'].data         = domains['color']
   
   
@@ -171,40 +168,38 @@ class DomainsForm(FlaskForm):
       return db_.delete(data)
 
 class Subdomains(FlaskForm):
-  name = StringField("name", validators=[DataRequired()])
-  priority_rate = RadioField(
+  subdomain_name = StringField("name", validators=[DataRequired()], render_kw=textFieldStyle)
+  subdomain_priority_rate = RadioField(
     "Priority Rate(10 higher rate than 1)",
     default = 1,
     coerce=int,
-    choices = [ x for x in range(1, 11) ],
-    render_kw = { "class" : "list-group list-group-horizontal" }
-  )
-  icon = StringField("icon", validators=[Optional()])
+    choices = [ x for x in range(1, 11) ], render_kw=textFieldStyle)
+  icon = StringField("icon", validators=[Optional()], render_kw=textFieldStyle)
 
 class SubdomainsForm(FlaskForm):
-  form = FormField(Subdomains)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
-
-  key = None
-  FKDomainId = None
+  key = FK = request = None
+  def __init__(self, *args, **kwargs):
+    super(SubdomainsForm, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+    self.FK      = kwargs['FK']
+    self.request = kwargs['request']
   
-  def init_key(self, **keys):
-    self.key = keys['key']
-    self.FKDomainId = keys['FK']
+  form = FormField(Subdomains)
+  submit = SubmitField(render_kw=submitFieldStyle)
 
   def init_data(self):
     if self.key is not None:
       subdomain = Database()
       subdomains = subdomain.select_query_by_id(self.key, 'subdomains', 'subdomain_id')
-      self.form['name'].data           = subdomains['name']
-      self.form['priority_rate'].data  = subdomains['priority_rate']
+      self.form['subdomain_name'].data           = subdomains['subdomain_name']
+      self.form['subdomain_priority_rate'].data  = subdomains['subdomain_priority_rate']
       self.form['icon'].data           = subdomains['icon']
   
   def save(self):
     cp = self.form.data
     cp.pop('csrf_token', None)
-    if self.FKDomainId is not None:
-      for i in self.FKDomainId:
+    if self.FK is not None:
+      for i in self.FK:
         cp[i[0]] = i[1]
     
     data = {
@@ -234,22 +229,22 @@ class SubdomainsForm(FlaskForm):
       return db_.delete(data)
 
 class Criterias(FlaskForm):
-  for_contribution  = FloatField("For Contribution", validators=[ NumberRange(min=-5.0, max=5.0)])
-  correctness       = FloatField("Correctness", validators=[ NumberRange(min=-5, max=5)])
-  wrongness         = FloatField("Wrongness", validators=[ NumberRange(min=-5, max=5)])
+  for_contribution  = FloatField("For Contribution", validators=[ NumberRange(min=-5.0, max=5.0)], render_kw=textFieldStyle)
+  correctness       = FloatField("Correctness", validators=[ NumberRange(min=-5, max=5)], render_kw=textFieldStyle)
+  wrongness         = FloatField("Wrongness", validators=[ NumberRange(min=-5, max=5)], render_kw=textFieldStyle)
   #reported          = FloatField("Reported", validators=[ NumberRange(min=-5, max=5)])
   #extra_info        = FloatField("Extra Information", validators=[ NumberRange(min=-5, max=5)])
 
 class CriteriasForm(FlaskForm):
-  form = FormField(Criterias)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
-
-  key = None
-  FK = None
+  key = FK = request = None
+  def __init__(self, *args, **kwargs):
+    super(CriteriasForm, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+    self.FK      = kwargs['FK']
+    self.request = kwargs['request']
   
-  def init_key(self, **keys):
-    self.key = keys['key']
-    self.FK = keys['FK']
+  form = FormField(Criterias)
+  submit = SubmitField(render_kw=submitFieldStyle)
 
   def init_data(self):
     if self.key is not None:
@@ -298,31 +293,27 @@ class CriteriasForm(FlaskForm):
       return db_.delete(data)
 
 class Images(FlaskForm):
-  title                 = StringField("Title", validators=[DataRequired()])
+  title                 = StringField("Title", validators=[DataRequired()], render_kw=textFieldStyle)
   upload_image          = FileField("Image File", validators=[], render_kw={'accept': '.jpg, .jpeg, .png'})
-  url_path              = URLField("Image Url(if file not found)")
-  most_contribution     = IntegerField("Most Contribution(by labeller)", default=1, validators=[DataRequired(), NumberRange(min=1, message="The contibution size must be greater than 1")])
+  url_path              = URLField("Image Url(if file not found)", render_kw=textFieldStyle)
+  most_contribution     = IntegerField("Most Contribution(by labeller)", default=1, validators=[DataRequired(), NumberRange(min=1, message="The contibution size must be greater than 1")], render_kw=textFieldStyle)
   classification_type   = SelectField(
     "Classification Type",
-    choices = [("Binary Classification", "Binary Classification"), ("Multi-Class", "Multi-Class"), ("Multi-Label","Multi-Label")],
-    render_kw = { "class" : "form-control"}
-  )
+    choices = [("Binary Classification", "Binary Classification"), ("Multi-Class", "Multi-Class"), ("Multi-Label","Multi-Label")], render_kw=textFieldStyle)
 
 class ImagesForm(FlaskForm):
+  key = FK = request = None
+  def __init__(self, *args, **kwargs):
+    super(ImagesForm, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+    self.FK      = kwargs['FK']
+    self.request = kwargs['request']
+  
   form = FormField(Images)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
+  submit = SubmitField(render_kw=submitFieldStyle)
 
   criterias = None
   criteria_id = None
-
-  key = None
-  FK = None
-  request = None
-
-  def init_key(self, **keys):
-    self.key = keys['key']
-    self.FK = keys['FK']
-    self.request = keys['request']
 
   def init_data(self):
     if self.key is not None:
@@ -392,39 +383,22 @@ class ImagesForm(FlaskForm):
       return msg, key
 
 class Labels(FlaskForm):
-  is_correct = BooleanField('Is it correct?')
+  is_correct = BooleanField('Is it correct?', render_kw=textFieldStyle)
 
 class LabelsForm(FlaskForm):
-  form = FormField(Labels)
-  submit  = SubmitField( render_kw = { "class" : "btn-primary"})
-
-  key = None
-  FK = None
-  request = None
-
+  key = FK = request = None
   subdomains = None
-
-  def init_key(self, **keys):
-    self.key     = keys['key']
-    self.FK      = keys['FK']
-    self.request = keys['request']
-
-    query = """select
-       sd.subdomain_id as subdomain_id,
-       d.name as domain_name,
-       sd.name as subdomain_name,
-       d.description as domain_description,
-       d.color as domain_color,
-       d.priority_rate as domain_priority_rate,
-       sd.icon as subdomain_icon
-      from
-          domains as d inner join subdomains as sd on d.domain_id = sd.subdomain_id
-          inner join labels as lb on lb.subdomain_id = sd.subdomain_id
-      where lb.image_id != %s;
-    """
-    subdomains = Database()
+  def __init__(self, *args, **kwargs):
+    super(LabelsForm, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+    self.FK      = kwargs['FK']
+    self.request = kwargs['request']
     
-    self.subdomains = subdomains.select_query(query=query, data=[(self.FK[0][1], )])
+    subdomains = Database()
+    self.subdomains = subdomains.select_query(name="subdomains_for_label", data=[(self.FK[0][1],)])
+  
+  form = FormField(Labels)
+  submit = SubmitField(render_kw=submitFieldStyle)
 
   def init_data(self):
     if self.key is not None:

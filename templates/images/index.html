@@ -1,25 +1,84 @@
 {% extends "layout.html" %}
-{% block title %} SubDomain / Index{% endblock %}
+{% block title %} {{ title }} {% endblock %}
 {% block content %}
-<div class="container">
-  <h1>Index page...</h1>
-  {% for i in data %}
-    <div style="padding:10px; display:inline-block">
-      <p>title: {{ i.title }}</p>
-      <!-- <p>url_path: {{ i.url_path }}</p> -->
-      <p>most_contribution: {{  i.most_contribution }}</p>
-      <p>classification_type: {{  i.classification_type }}</p>
-      <p>user_id: {{  i.user_id }}</p>
-      <p>criteria_id: {{  i.criteria_id }}</p>
-      <img src="{{ i.url_path }}" alt="" width="150" height="150">
-      <p>
-        <a href="{{ url_for('images_update_page', key=i.image_id) }}" class="btn">Update</a>
-        <a href="{{ url_for('images_delete_page', key=i.image_id) }}" class="btn">Delete</a>
-        <a href="{{ url_for('images_details_page', key=i.image_id) }}"class="btn">Details</a>
-        <a href="{{ url_for('labels_index_page', image_id=i.image_id) }}"class="btn">labels</a>
-      </p>
-    </div>
-  {% endfor %}
-</div>
+  <div class="container flex flex-col mx-auto my-4">
+    <form action="{{ request.path }}" method="get">
+      <div class="flex flex-row items-center">
+        <h1 class="w-full p-5 text-4xl leading-8 bg-gray-50">{{ title }}</h1>
+        <div class="w-full text-right">
+          <a class="px-4 py-2 text-black bg-indigo-50 " href="{{ url_for('criterias_index_page') }}">New Image</a>
+        </div>
+      </div>
+      <div class="grid items-center grid-cols-3 gap-4 p-4 mx-5 my-5 border-2 border-gray-200 border-dotted">
+        <div class="space-x-2">
+          <label for="Name">Name</label>
+          <input type="search" name="search_name" value="{{ search['search_name'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <button type="submit" class="w-full px-2 py-1 text-base font-medium text-white bg-yellow-500 rounded-md">Filter</button>
+        </div>
+      </div>
+      <div class="space-x-2 text-right">
+        {% if sort_by %}
+          <select name="sort_by" class="p-2 my-2 leading-8 bg-gray-100" >
+            {% for key, value in sort_by.items() %}
+              {% if selected_sort == key %}
+                <option value="{{key}}" selected>{{value}}</option>
+              {% else %}
+                <option value="{{key}}">{{value}}</option>
+              {% endif %}
+            {% endfor %}
+          </select>  
+          <button type="submit" class="px-2 py-1 text-base font-medium text-white bg-green-500 rounded-md">Sort</button>
+        {% endif %}
+      </div>
+    </form>
 
+    <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        <div class="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  title
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Description
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Priority Rate
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Color
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Operations
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for i in data %}
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.title }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.most_contribution }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.classification_type }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <img src="{{ i.url_path }}" alt="{{ i.title }}" width="150" height="150">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <a href="{{ url_for('images_update_page', key=i.image_id) }}"     class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Update</a>
+                  <a href="{{ url_for('images_delete_page', key=i.image_id) }}"     class="px-4 py-3 text-base font-medium text-white bg-blue-500 rounded-md">Delete</a>
+                  <a href="{{ url_for('images_details_page', key=i.image_id) }}"    class="px-4 py-3 text-base font-medium text-white bg-red-500 rounded-md">Details</a>
+                  <a href="{{ url_for('labels_index_page', image_id=i.image_id) }}" class="px-4 py-3 ml-4 text-base font-medium text-white bg-yellow-500 rounded-md">Labels of Image</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+          
 {% endblock %}
