@@ -32,11 +32,16 @@ select_query = {
          to_char(join_date, 'DD Mon YYYY HH24:MI:SS') as join_date
         from users as u left join contributions as cnt on u.user_id = cnt.user_id
         group by u.user_id""",
-  'images': """select i.image_id as image_id, title, url_path, count(c.contribution_id) as user_contribution, most_contribution,
-       classification_type, is_blob, count(l.label_id) as label_count
-from images as i left join labels as l on i.image_id = l.image_id
+  'images': """select i.image_id as image_id, title, url_path, 
+        count(c.contribution_id) as user_contribution, most_contribution, classification_type,
+        case
+           when is_favourite = false THEN 'No'
+           ELSE 'Yes'
+        END as is_favourite
+        , count(l.label_id) as label_count
+        from images as i left join labels as l on i.image_id = l.image_id
                  left join contributions as c on c.label_id = l.label_id
-group by i.image_id  
+        group by i.image_id  
   """,
   'subdomains_for_label': """select sd.subdomain_id, domain_name, description, subdomain_name, color, icon
       from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id

@@ -398,7 +398,7 @@ class Images(FlaskForm):
   
   classification_type   = SelectField("Classification Type", choices = [("Binary Classification", "Binary Classification"), ("Multi-Class", "Multi-Class"), ("Multi-Label","Multi-Label")], render_kw=selectFieldStyle)
   
-  is_blob               = BooleanField("Save as BLOB?", default=False, validators=[], render_kw=checkboxFieldStyle)
+  is_favourite          = BooleanField("Is your favourite image?", default=False, validators=[], render_kw=checkboxFieldStyle)
 
 class ImagesForm(FlaskForm):
   key = FK = request = None
@@ -422,7 +422,7 @@ class ImagesForm(FlaskForm):
       self.form['url_path'].data               = db_data['url_path']
       self.form['most_contribution'].data      = db_data['most_contribution']
       self.form['classification_type'].data    = db_data['classification_type']
-      self.form['is_blob'].data                = db_data['is_blob']
+      self.form['is_favourite'].data           = db_data['is_favourite']
       
       self.criterias = db_.select_query('criterias')
       self.criteria_id = db_data['criteria_id']

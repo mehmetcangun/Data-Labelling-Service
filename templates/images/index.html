@@ -56,6 +56,9 @@
                   Label Size
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Favourite
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                   Image
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
@@ -71,6 +74,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.most_contribution }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.classification_type }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.label_count }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.is_favourite }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <a href="{{ i.url_path }}" target="_blank" title="{{ i.title }}" class="px-4 py-3 text-base font-medium text-white bg-green-500 rounded-md">Show Image</a>
                 </td>
