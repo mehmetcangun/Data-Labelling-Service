@@ -206,8 +206,9 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
 
     db_ = Database()
     if image_id is None:
-      data = db_.select_query(name, sort_by=sort_by_get, search=search_set)
-    data = db_.select_query(name, data=(image_id, ), sort_by=sort_by_get, search=search_set)
+      data = db_.select_query(name, sort_by=sort_by_get, search=search_set, data=[])
+    else:
+      data = db_.select_query(name, data=[image_id, ], sort_by=sort_by_get, search=search_set)
     
     return render_template(name + "/" + method + ".html", 
               data=data, 
