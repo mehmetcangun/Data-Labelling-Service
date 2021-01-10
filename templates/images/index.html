@@ -41,16 +41,22 @@
             <thead class="bg-gray-100">
               <tr>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  title
+                  Title
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  Description
+                  Total Contribution by Users
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  Priority Rate
+                  Most Contribution
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                  Color
+                  Classification Type
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Label Size
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  Image
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                   Operations
@@ -61,10 +67,12 @@
               {% for i in data %}
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.title }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.user_contribution }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.most_contribution }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.classification_type }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.label_count }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <img src="{{ i.url_path }}" alt="{{ i.title }}" width="150" height="150">
+                  <a href="{{ i.url_path }}" target="_blank" title="{{ i.title }}" class="px-4 py-3 text-base font-medium text-white bg-green-500 rounded-md">Show Image</a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <a href="{{ url_for('images_details_page', key=i.image_id) }}"    class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>

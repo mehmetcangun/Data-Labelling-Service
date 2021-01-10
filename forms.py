@@ -484,7 +484,7 @@ class ImagesForm(FlaskForm):
       return msg, key
 
 class Labels(FlaskForm):
-  is_correct = BooleanField('Is it correct?', default=False, validators=[DataRequired()],render_kw=checkboxFieldStyle)
+  is_correct = BooleanField('Is it correct?', default=False, validators=[],render_kw=checkboxFieldStyle)
 
 class LabelsForm(FlaskForm):
   key = FK = request = None
