@@ -272,7 +272,7 @@ def images_add_page(criteria_id):
   return form_operation('images', 'add', FK=[('user_id', user_id), ('criteria_id', criteria_id)])
 
 def images_update_page(key):
-  return form_operation('images', 'update', key=key, )
+  return form_operation('images', 'update', key=key)
 
 def images_delete_page(key):
   return form_operation('images', 'delete', key=key)

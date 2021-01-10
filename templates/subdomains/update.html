@@ -19,6 +19,23 @@
       {% endfor %}
     {% endfor %}
 
+    {% if data.domains %}
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">Change Domain</h2>
+      <select name="domain_select" size="4" class="mx-auto">
+        {% for i in data.domains %}
+          {% if i.domain_id == data.domain_id %}
+            <option class="flex mx-auto bg-gray-100 px-20" value="{{i.domain_id}}" selected>
+              {{i.domain_id}}, {{i.domain_name}}
+            </option>
+          {% else %}
+          <option class="flex mx-auto bg-gray-100 px-20" value="{{i.domain_id}}">
+            {{i.domain_id}}, {{i.domain_name}}
+          </option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    {% endif %}
+
     <div class="mx-10">
       {% for field in data.form %}
         {% if field.name != 'form-csrf_token' %}

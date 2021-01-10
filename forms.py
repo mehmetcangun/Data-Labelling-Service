@@ -1,16 +1,15 @@
+from flask import current_app
+import uuid
+import os
 from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SelectField, PasswordField, BooleanField, FormField, SubmitField, TextAreaField, RadioField, FileField, FloatField
 from wtforms.validators import DataRequired, EqualTo, Length, Optional, NumberRange
 from wtforms.fields.html5 import EmailField, URLField, DecimalRangeField, IntegerField
 from wtforms_components import IntegerField, ColorField
-from werkzeug.utils import secure_filename
-import uuid
-import os
-from flask import current_app
-from database import Database
 from flask_login import UserMixin
+from werkzeug.utils import secure_filename
 from passlib.hash import pbkdf2_sha256 as hasher
-from colour import Color
+from database import Database
 from settings import BASE_URL
 
 msgLength   = "The {} has to be between {} and {}"
@@ -280,16 +279,20 @@ class SubdomainsForm(FlaskForm):
   
   form = FormField(Subdomains)
   submit = SubmitField(render_kw=submitFieldStyle)
-
+  domains = None
+  domain_id = None
   def init_data(self):
     if self.key is not None:
-      subdomain = Database()
-      subdomains = subdomain.select_query_by_id(self.key, 'subdomains', 'subdomain_id')
+      db_ = Database()
+      subdomains = db_.select_query_by_id(self.key, 'subdomains', 'subdomain_id')
       self.form['subdomain_name'].data           = subdomains['subdomain_name']
       self.form['subdomain_priority_rate'].data  = subdomains['subdomain_priority_rate']
       self.form['icon'].data                     = subdomains['icon']
       self.form['frontcolor'].data               = subdomains['frontcolor']
       self.form['backgroundcolor'].data          = subdomains['backgroundcolor']
+      
+      self.domains = db_.select_query('domains')
+      self.domain_id = subdomains['domain_id']
   
   def save(self):
     cp = self.form.data
@@ -302,6 +305,9 @@ class SubdomainsForm(FlaskForm):
       for i in self.FK:
         cp[i[0]] = i[1]
     
+    if 'domain_select' in self.request.form:
+      cp['domain_id'] = self.request.form['domain_select']
+
     data = {
       'primary_key': 'subdomain_id',
       'table_name': 'subdomains',

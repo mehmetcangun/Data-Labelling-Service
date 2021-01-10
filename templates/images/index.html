@@ -20,7 +20,7 @@
       </div>
       <div class="space-x-2 text-right">
         {% if sort_by %}
-          <select name="sort_by" class="p-2 my-2 leading-8 bg-gray-100" >
+          <select name="sort_by" class="p-2 my-2 leading-8 bg-gray-100">
             {% for key, value in sort_by.items() %}
               {% if selected_sort == key %}
                 <option value="{{key}}" selected>{{value}}</option>
