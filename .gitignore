@@ -12,4 +12,6 @@ docs/build/
 
 .env
 
-/static/uploads/*
+/static/uploads/*.jpg
+
+.vscode
