@@ -8,7 +8,10 @@ messages = {
   'delete' : 'The data is deleted.',
   'domains_name_key': 'Domain key should be unique, please try again.',
   'subdomains_domain_id_fkey': 'Domain has subdomains so the domain key should not deleted.',
+  'labels_subdomain_id_fkey': 'Subdomain has been used in labels so the subdomain could not be deleted.',
+  'images_criteria_id_fkey': 'This criteria have images so the criteria could not be deleted.',
   'users_email_key': 'You must check your credentials!',
+  'criterias_user_id_fkey':'User have criterias so the user could not be deleted.',
   'error': 'Error has been occured. Please contact administrator.'
 }
 
@@ -23,7 +26,7 @@ select_query = {
         inner join domains as d on d.domain_id = sd.domain_id
         where lb.image_id = %s
         """,
-  'users': """select u.user_id as user_id, uname, surname, email, usertype, points,
+  'users': """select u.user_id as user_id, uname, surname, security_answer, email, usertype, points,
          count(cnt.user_id) as contribution_size,
          to_char(last_seen, 'DD Mon YYYY HH24:MI:SS') as last_seen,
          to_char(join_date, 'DD Mon YYYY HH24:MI:SS') as join_date
@@ -36,7 +39,7 @@ select_query = {
           select subdomain_id from labels where image_id = %s
       ) 
   """,
-  'subdomains' : 'select sd.subdomain_id, domain_name, description, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id group by sd.subdomain_id, d.domain_id',
+  'subdomains' : 'select sd.subdomain_id, domain_name, description, frontcolor, backgroundcolor, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id group by sd.subdomain_id, d.domain_id',
   'criterias': "select c.criteria_id, for_contribution, correctness, wrongness, uname, surname, count(img.criteria_id) as count_images_used from criterias as c inner join users as u on c.user_id = u.user_id left join images as img on img.criteria_id = c.criteria_id group by c.criteria_id, u.user_id"
 }
 
@@ -46,7 +49,7 @@ sort_by_tables = {
     'points_asc':' points ASC',
     'points_desc':' points DESC',
     'contribution_size_asc':' contribution_size ASC',
-    'contribution_size_asc':' contribution_size DESC',
+    'contribution_size_desc':' contribution_size DESC',
     'join_date_asc':' join_date ASC',
     'join_date_desc':' join_date DESC',
     'last_seen_asc':' last_seen ASC',
@@ -113,7 +116,7 @@ class Database():
         query = select_query[name]
         if sort_by is not None:
           query = query + ' order by ' + sort_by_tables[name][sort_by]
-        
+        print(query)
         cursor.execute(query, tuple(data))
         
         result = cursor.fetchall()
@@ -140,15 +143,22 @@ class Database():
     try:
       with dbapi2.connect(DB_URL) as connection:
         with connection.cursor() as cursor:
+          print(query)
+          print(data)
+          print(method)
+          
           cursor.execute(query, tuple(data))
           connection.commit()
+          message = messages[method]
+          print(cursor.statusmessage)
           if method == 'insert':
             id_ = cursor.fetchone()[0]
-            return messages['insert'], id_
-          elif method == 'delete':
-            return messages['delete'], 0
-          elif method == 'update':
-            return messages['update'], 0
+            print(id_)
+            return message, id_
+          elif method == 'delete' or method == 'update':
+            if cursor.rowcount <= 0:
+              message = "Check your credentials."
+            return message, cursor.rowcount
 
     except dbapi2.IntegrityError as e:
       print(e.diag.constraint_name)
@@ -158,6 +168,9 @@ class Database():
       return messages['error'], -1
     except dbapi2.Error as e:
       print(e.pgcode)
+      print(e.message_primary)
+      print(e.column_name)
+      print(e.constraint_name)
       print("mance: ", e.diag.message_detail)
       return messages['error'], -1
 
@@ -173,6 +186,7 @@ class Database():
     query += ') '
     values = values[:-1]
     query += values + ') RETURNING ' + class_['primary_key']
+    
     return self.run_query(query, 'insert', data)
       
   def update(self, class_):

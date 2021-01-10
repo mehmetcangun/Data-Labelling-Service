@@ -24,6 +24,7 @@ app.add_url_rule("/users", view_func=views.users_index_page, methods=['GET'])
 app.add_url_rule("/users/<int:key>", view_func=views.users_details_page, methods=['GET'])
 app.add_url_rule("/users_update/<int:key>", view_func=views.users_update_page, methods=['GET', 'POST'])
 app.add_url_rule("/users_delete/<int:key>", view_func=views.users_delete_page, methods=['GET', 'POST'])
+app.add_url_rule("/users/change_password", view_func=views.users_change_password_page, methods=['GET', 'POST'])
 
 app.add_url_rule("/domains", view_func=views.domains_index_page, methods=['GET'])
 app.add_url_rule("/domains/<int:key>", view_func=views.domains_details_page, methods=['GET'])
@@ -57,13 +58,10 @@ app.add_url_rule("/images/<int:image_id>/labels_delete/<int:key>" , view_func=vi
 
 
 '''
-app.add_url_rule("/users")
 app.add_url_rule("/profile/<int:user_key>")
 app.add_url_rule("/contributions/<int:user_key>")
 app.add_url_rule("/delete_my_account")
-
 '''
-
 
 lm.init_app(app)
 lm.login_view = "login_page"

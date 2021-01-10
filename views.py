@@ -1,5 +1,5 @@
 from flask import current_app, flash, redirect, url_for, render_template, request, abort
-from forms import LoginForm, DomainsForm, SubdomainsForm, CriteriasForm, ImagesForm, LabelsForm, UsersForm
+from forms import LoginForm, UsersEdit, ChangePasswordForm, DomainsForm, SubdomainsForm, CriteriasForm, ImagesForm, LabelsForm, UsersForm
 
 from flask_login import login_user, logout_user, login_required, current_user, UserMixin
 from passlib.hash import pbkdf2_sha256 as hasher
@@ -33,11 +33,23 @@ def login_page():
       password = form["password"].data
       if hasher.verify(password, user.password):
         login_user(user)
+        db_ = Database()
+        data = {
+          'primary_key': 'user_id',
+          'table_name': 'users',
+          'data': {
+            'last_seen': 'NOW()'
+          },
+          'where': {
+            'email': form['email'].data
+          }
+        }
+        db_.update(data)
         next_url = request.args.get('next', url_for("home_page"))
         return redirect(next_url)
       flash("Invalid credentials.")
     flash("Invalid credentials.")
-  return render_template("login.html", form=form)
+  return render_template("login.html", data=form)
 
 def get_user(user_email):
   db = Database()
@@ -78,10 +90,10 @@ sort_by = {
     'points_desc': 'Points First Higher', 
     'contribution_size_asc': 'Contribution Size Lower', 
     'contribution_size_desc': 'Contribution Size Higher', 
-    'join_date_asc': 'Join Date Late',   
-    'join_date_desc': 'Join Date Early',  
-    'last_seen_asc': 'Last Seen Late',   
-    'last_seen_desc': 'Last Seen Early',  
+    'join_date_asc': 'Join Date(New)',   
+    'join_date_desc': 'Join Date(Old)',  
+    'last_seen_asc': 'Last Seen(New)',   
+    'last_seen_desc': 'Last Seen(Old)',  
     'uname_asc': 'Name(A-Z)',       
     'uname_desc': 'Name(Z-A)',      
     'surname_asc': 'Surname(A-Z)',     
@@ -121,12 +133,12 @@ sort_by = {
     'default': 'Default',
     'uname_asc': 'Name(A-Z)',       
     'uname_desc': 'Name(Z-A)',
-    'for_contribution_asc':'For Contribution (5.0 > -5.0)',
-    'for_contribution_desc':'For Contribution (-5.0 > 5.0)',
-    'correctness_asc':'Correctness (5.0 > -5.0)',
-    'correctness_desc':'Correctness (-5.0 > 5.0)',
-    'wrongness_asc':'Wrongness (5.0 > -5.0)',
-    'wrongness_desc':'Wrongness (-5.0 > 5.0)',
+    'for_contribution_asc':'For Contribution (-5.0 > 5.0)',
+    'for_contribution_desc':'For Contribution (5.0 > -5.0)',
+    'correctness_asc':'Correctness (-5.0 > 5.0)',
+    'correctness_desc':'Correctness (5.0 > -5.0)',
+    'wrongness_asc':'Wrongness (-5.0 > 5.0)',
+    'wrongness_desc':'Wrongness (5.0 > -5.0)',
     'count_images_used_asc':'Count of images used-Increasing',
     'count_images_used_desc':'Count of images used-Decreasing'
   }
@@ -150,7 +162,7 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
     data = all_forms[name](key=key, FK=FK, request = request)
     if data.validate_on_submit():
       message, detectkey = data.save()
-      if detectkey != -1:
+      if detectkey > 0:
         if image_id is None:
           return redirect(url_for(name+"_details_page", key=key))
         return redirect(url_for(name+"_details_page", key=key, image_id=image_id))
@@ -160,7 +172,7 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
     data = all_forms[name](key=key, FK=FK, request = request)
     if request.method == "POST":
       message, key = data.delete()
-      if key != -1:
+      if key > 0:
         return redirect(url_for(name+"_index_page"))
   
   elif method == 'details':
@@ -174,8 +186,6 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
     for i in request.args:
       if str(i).startswith('search_'):
         search_set[i] = request.args[i]
-    
-    print(search_set)
 
     db_ = Database()
     if image_id is None:
@@ -277,11 +287,32 @@ def users_index_page():
 def users_add_page(usertype):
   return form_operation('users', 'add', FK=[('usertype', usertype-8)])
 
-def users_update_page(key):
-  return form_operation('users', 'update', key=key)
-
 def users_delete_page(key):
   return form_operation('users', 'delete', key=key)
   
 def users_details_page(key):
   return form_operation('users', 'details', key=key)
+
+def users_change_password_page():
+  c_uid = current_user.uid if current_user.is_authenticated else None
+  form = ChangePasswordForm(key=c_uid)
+  message = ""
+  if form.validate_on_submit():
+    message, detectkey = form.save()
+    flash(message)
+    if detectkey > 0:
+      return redirect(url_for("logout_page"))
+  form.init()
+  return render_template('users/change_password.html', data=form, message=message)
+
+def users_update_page(key):
+  form = UsersEdit(key=key)
+  message = ""
+  if form.validate_on_submit():
+    message, detectkey = form.save()
+    flash(message)
+    if detectkey > 0:
+      return redirect(url_for("users_index_page"))
+  form.init_data()
+
+  return render_template('users/update.html', data=form, message=message)

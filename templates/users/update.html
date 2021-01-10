@@ -8,20 +8,20 @@
     {{ data.csrf_token }}
     
     {% if message %}
-      <h2>{{ message }}</h2>
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">{{ message }}</h2>
     {% endif %}
     
     {% for field, msg in data.errors.items() %}
       {% for i in msg: %}
         <div class="py-2 text-lg text-center bg-gray-100 mx-36">
-          <strong>{{ msg[i][0] }}</strong>
+          <strong>{{ i }}</strong>
         </div>
       {% endfor %}
     {% endfor %}
 
     <div class="mx-10">
-      {% for field in data.form %}
-        {% if field.name != 'form-csrf_token' %}
+      {% for field in data %}
+        {% if field.name != 'csrf_token' and field.name != 'submit' %}
           <div class="flex flex-row block gap-4 py-2">
             {{ field.label(class='text-sm text-lg font-medium text-gray-700 w-44') }}
             {{ field }}

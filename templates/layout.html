@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock %} - Data Labelling Service</title>
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='mytailwind.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.css" rel="stylesheet"> 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
@@ -31,11 +30,12 @@
       {% endif %}
       
       {% if current_user.is_active %}
-        <a class="bg-gray-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('logout_page') }}">Change Password</a>  
+        <a class="bg-gray-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('users_change_password_page') }}">Change Password</a>  
         <a class="bg-gray-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('logout_page') }}">Profile</a>  
         <a class="bg-gray-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('logout_page') }}">Logout</a>
       {% else %}
         <a class="bg-blue-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('login_page') }}">login</a>
+        <a class="bg-gray-300 text-gray-800 rounded-xl px-6 py-4 mx-1" href="{{ url_for('users_change_password_page') }}">Forgot My Password</a> 
       {% endif %}
     </div>
     <div class="py-4">

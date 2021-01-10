@@ -8,7 +8,7 @@
     {{ data.csrf_token }}
     
     {% if message %}
-      <h2>{{ message }}</h2>
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">{{ message }}</h2>
     {% endif %}
     
     {% for field, msg in data.errors.items() %}

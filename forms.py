@@ -10,28 +10,88 @@ from flask import current_app
 from database import Database
 from flask_login import UserMixin
 from passlib.hash import pbkdf2_sha256 as hasher
+from colour import Color
+from settings import BASE_URL
 
-msgRequired = "The {} must be filled."
 msgLength   = "The {} has to be between {} and {}"
 
-textFieldStyle = {"class":"focus:bg-indigo-50 focus:text-black px-4 py-1 w-full text-white bg-indigo-500 rounded-lg shadow-lg text-lg"}
-submitFieldStyle = {"class":"px-6 py-3 font-bold bg-red-500 rounded-md text-white mx-96"}
+textFieldStyle = selectFieldStyle= {"class":"focus:bg-indigo-500 focus:text-white px-4 py-1 w-full text-black bg-indigo-50 rounded-lg shadow-lg text-lg"}
+
+colorFieldStyle = {
+  "class": "focus:bg-indigo-50 focus:text-black h-20 p-5 m-5 w-full rounded-lg shadow-lg text-lg"
+}
+
+radioFieldStyle = {
+  "class": "grid grid-flow-col auto-cols-max gap-10 px-4 py-8 my-0 w-full text-indigo-500 bg-indigo-50 rounded-lg shadow-lg text-lg"
+}
+
+checkboxFieldStyle = {
+  "class": "h-6 w-6 border border-gray-300 rounded-md checked:bg-blue-600 checked:border-transparent focus:outline-none"
+}
+
+submitFieldStyle = {"class":"px-6 py-3 font-bold bg-red-500 rounded-md text-white mx-96 hover:bg-red-900"}
+
 
 class LoginForm(FlaskForm):
-  email = EmailField("E-Mail", validators=[DataRequired()])
-  password = PasswordField("Password", validators=[DataRequired()])
+  email           = EmailField("E-Mail", validators=[DataRequired(), Length(min=1, max=100, message = msgLength.format("E-Mail", 1, 100))], render_kw=textFieldStyle)
+  
+  password        = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=50, message = msgLength.format("Password", 8, 50))], render_kw=textFieldStyle)
+
+  submit          = SubmitField(render_kw=submitFieldStyle)
 
 class Users(FlaskForm):
-  uname            = StringField("Name", validators=[DataRequired()], render_kw=textFieldStyle)
-  surname         = StringField("Surname", validators=[DataRequired()], render_kw=textFieldStyle)
-  email           = EmailField("E-Mail", validators=[DataRequired()], render_kw=textFieldStyle)
-  password        = PasswordField("Password", validators=[DataRequired(), EqualTo('password_repeat', message='Password must match.')], render_kw=textFieldStyle)
-  password_repeat = PasswordField("Password Repeat", validators=[DataRequired()], render_kw=textFieldStyle)
+  uname           = StringField("Name", validators=[DataRequired(), Length(min=1, max=30, message = msgLength.format("Name", 1, 30))], render_kw=textFieldStyle)
+  
+  surname         = StringField("Surname", validators=[DataRequired(), Length(min=1, max=30, message = msgLength.format("Surname", 1, 30))], render_kw=textFieldStyle)
+
+  email           = EmailField("E-Mail", validators=[DataRequired(), Length(min=1, max=100, message = msgLength.format("E-Mail", 1, 100))], render_kw=textFieldStyle)
+  
+  password        = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=50, message = msgLength.format("Password", 8, 50)), EqualTo('password_repeat', message='Password must match.')], render_kw=textFieldStyle)
+  
+  password_repeat = PasswordField("Password Repeat", render_kw=textFieldStyle)
+  
+  security_answer = StringField("What's your favorite object or person?", validators=[DataRequired(),  Length(min=1, max=30, message = msgLength.format("What's your favorite object or person?", 1, 30))], render_kw=textFieldStyle)
 
 class UsersEdit(FlaskForm):
-  uname = StringField("Name", validators=[DataRequired()])
-  surname = StringField("Surname", validators=[DataRequired()])
-  email = EmailField("E-Mail", validators=[DataRequired()])
+  key=None
+  def __init__(self, *args, **kwargs):
+    super(UsersEdit, self).__init__(*args, **kwargs)
+    self.key     = kwargs['key']
+  
+  uname           = StringField("Name", validators=[DataRequired(), Length(min=1, max=30, message = msgLength.format("Name", 1, 30))], render_kw=textFieldStyle)
+  
+  surname         = StringField("Surname", validators=[DataRequired(), Length(min=1, max=30, message = msgLength.format("Surname", 1, 30))], render_kw=textFieldStyle)
+
+  email           = EmailField("E-Mail", validators=[DataRequired(), Length(min=1, max=100, message = msgLength.format("E-Mail", 1, 100))], render_kw=textFieldStyle)
+  
+  security_answer = StringField("What's your favorite object or person?", validators=[DataRequired(),  Length(min=1, max=30, message = msgLength.format("What's your favorite object or person?", 1, 30))], render_kw=textFieldStyle)
+
+  submit = SubmitField(render_kw=submitFieldStyle)
+
+  def init_data(self):
+    if self.key is not None:
+      db_ = Database()
+      db_data = db_.select_query_by_id(self.key, 'users', 'user_id')
+      self.uname.data             = db_data['uname']
+      self.surname.data           = db_data['surname']
+      self.email.data             = db_data['email']
+      self.security_answer.data   = db_data['security_answer']
+
+  def save(self):
+    cp = self.data
+    cp.pop('csrf_token', None)
+    cp.pop('submit', None)
+    
+    data = {
+      'primary_key': 'user_id',
+      'table_name': 'users',
+      'data': cp,
+      'where': {
+        'user_id': self.key
+      }
+    }
+    db_ = Database()
+    return db_.update(data)
 
 class UsersForm(FlaskForm):
   key = FK = request = None
@@ -44,20 +104,6 @@ class UsersForm(FlaskForm):
   form = FormField(Users)
   submit = SubmitField(render_kw=submitFieldStyle)
 
-  def init_data(self):
-    if self.key is not None:
-      db_ = Database()
-      db_data = db_.select_query_by_id(self.key, 'users', 'user_id')
-      self.form['uname'].data             = db_data['uname']
-      self.form['surname'].data           = db_data['surname']
-      self.form['email'].data             = db_data['email']
-      self.form['password'].render_kw = {
-        'disabled': "true"
-      }
-      self.form['password_repeat'].render_kw = {
-        'disabled': "true"
-      }
-  
   def save(self):
     cp = self.form.data
     cp.pop('csrf_token', None)
@@ -98,23 +144,67 @@ class UsersForm(FlaskForm):
       db_ = Database()
       return db_.delete(data)
 
+class ChangePasswordForm(FlaskForm):
+  key = None
+  def __init__(self, *args, **kwargs):
+    super(ChangePasswordForm, self).__init__(*args, **kwargs)
+    self.key = kwargs['key']
+
+  email           = EmailField("E-Mail", validators=[DataRequired(), Length(min=1, max=100, message = msgLength.format("E-Mail", 1, 100))], render_kw=textFieldStyle)
+
+  security_answer = StringField("What's your favorite object or person?", validators=[DataRequired(),  Length(min=1, max=30, message = msgLength.format("What's your favorite object or person?", 1, 30))], render_kw=textFieldStyle)
+  
+  password        = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=50, message = msgLength.format("Password", 8, 50)), EqualTo('password_repeat', message='Password must match.')], render_kw=textFieldStyle)
+  
+  password_repeat = PasswordField("Password Repeat", render_kw=textFieldStyle)
+  
+  submit          = SubmitField(render_kw=submitFieldStyle)
+  
+  def init(self):
+    if self.key is not None:
+      db_ = Database()
+      users = db_.select_query_by_id(self.key, 'users', 'user_id')
+      for i in users:
+        print("OBAAA: ", i)
+      self.email.data = users['email']
+      self.security_answer.data = users['security_answer']
+    else:
+      print("kel")
+      
+  def save(self):
+    cp = self.data
+    cp.pop('submit', None)
+    cp.pop('csrf_token', None)
+    cp.pop('password_repeat', None)
+    
+    cp['password'] = hasher.hash(cp['password'])
+    d_email = cp['email']
+    cp.pop('email', None)
+    d_security_answer = cp['security_answer']
+    cp.pop('security_answer', None)
+
+    data = {
+      'primary_key': 'user_id',
+      'table_name': 'users',
+      'data': cp,
+      'where': {
+        'email': d_email,
+        'security_answer': d_security_answer 
+      }
+    }
+    db_ = Database()
+    return db_.update(data)
+
 class Domains(FlaskForm):
   domain_id = None
-  domain_name = StringField("Name", validators=[DataRequired()], render_kw=textFieldStyle)
-  description = TextAreaField(
-    "Description", 
-    validators = [ 
-      DataRequired(message = msgRequired.format("Description")),
-      Length(min=1, max=1000, message = msgLength.format("Description", 1, 1000))
-    ], render_kw=textFieldStyle)
-  domain_priority_rate = RadioField(
-    "Priority Rate(10 higher rate than 1)",
-    default = 1,
-    coerce=int,
-    choices = [ x for x in range(1, 11) ], render_kw=textFieldStyle)
-  color = ColorField(
-    "Color", 
-    validators = [], render_kw=textFieldStyle)
+  
+  domain_name = StringField("Domain Name", validators=[DataRequired(), Length(min=1, max=50, message = msgLength.format("Domain Name", 1, 50))], render_kw=textFieldStyle)
+  
+  description = TextAreaField("Description", validators = [DataRequired(), Length(min=1, max=1000, message= msgLength.format("Description", 1, 1000))], render_kw=textFieldStyle)
+  
+  domain_priority_rate = RadioField("Priority Rate(10 higher rate than 1)", default=1, coerce=int, choices=[x for x in range(1, 11)], render_kw=radioFieldStyle)
+  
+  color = ColorField("Color", validators = [DataRequired()], render_kw=colorFieldStyle)
 
 class DomainsForm(FlaskForm):
   key = FK = request = None
@@ -140,7 +230,9 @@ class DomainsForm(FlaskForm):
   def save(self):
     cp = self.form.data
     cp.pop('csrf_token', None)
-    cp['color'] = str(cp['color'])
+    
+    cp['color'] = self.request.form['form-color']
+
     data = {
       'primary_key': 'domain_id',
       'table_name': 'domains',
@@ -168,13 +260,15 @@ class DomainsForm(FlaskForm):
       return db_.delete(data)
 
 class Subdomains(FlaskForm):
-  subdomain_name = StringField("name", validators=[DataRequired()], render_kw=textFieldStyle)
-  subdomain_priority_rate = RadioField(
-    "Priority Rate(10 higher rate than 1)",
-    default = 1,
-    coerce=int,
-    choices = [ x for x in range(1, 11) ], render_kw=textFieldStyle)
+  subdomain_name = StringField("Subdomain Name", validators=[DataRequired(), Length(min=1, max=50, message = msgLength.format("Subdomain Name", 1, 50))], render_kw=textFieldStyle)
+
+  subdomain_priority_rate = RadioField("Priority Rate(10 higher rate than 1)", default=1, coerce=int, choices=[x for x in range(1, 11)], render_kw=radioFieldStyle)
+
   icon = StringField("icon", validators=[Optional()], render_kw=textFieldStyle)
+
+  frontcolor = ColorField("Front Color of Icon", default="#000000", validators = [], render_kw=colorFieldStyle)
+  
+  backgroundcolor = ColorField("Background Color of Icon", default="#FFFFFF", validators = [], render_kw=colorFieldStyle)
 
 class SubdomainsForm(FlaskForm):
   key = FK = request = None
@@ -193,11 +287,17 @@ class SubdomainsForm(FlaskForm):
       subdomains = subdomain.select_query_by_id(self.key, 'subdomains', 'subdomain_id')
       self.form['subdomain_name'].data           = subdomains['subdomain_name']
       self.form['subdomain_priority_rate'].data  = subdomains['subdomain_priority_rate']
-      self.form['icon'].data           = subdomains['icon']
+      self.form['icon'].data                     = subdomains['icon']
+      self.form['frontcolor'].data               = subdomains['frontcolor']
+      self.form['backgroundcolor'].data          = subdomains['backgroundcolor']
   
   def save(self):
     cp = self.form.data
     cp.pop('csrf_token', None)
+    
+    cp['frontcolor'] = self.request.form['form-frontcolor']
+    cp['backgroundcolor'] = self.request.form['form-backgroundcolor']
+
     if self.FK is not None:
       for i in self.FK:
         cp[i[0]] = i[1]
@@ -210,6 +310,7 @@ class SubdomainsForm(FlaskForm):
         'subdomain_id': self.key
       }
     }
+    print(data)
     db_ = Database()
     if self.key is None:
       return db_.add(data)
@@ -229,11 +330,9 @@ class SubdomainsForm(FlaskForm):
       return db_.delete(data)
 
 class Criterias(FlaskForm):
-  for_contribution  = FloatField("For Contribution", validators=[ NumberRange(min=-5.0, max=5.0)], render_kw=textFieldStyle)
-  correctness       = FloatField("Correctness", validators=[ NumberRange(min=-5, max=5)], render_kw=textFieldStyle)
-  wrongness         = FloatField("Wrongness", validators=[ NumberRange(min=-5, max=5)], render_kw=textFieldStyle)
-  #reported          = FloatField("Reported", validators=[ NumberRange(min=-5, max=5)])
-  #extra_info        = FloatField("Extra Information", validators=[ NumberRange(min=-5, max=5)])
+  for_contribution  = FloatField("For Contribution", default=1.0, validators=[DataRequired(), NumberRange(min=-5.0, max=5.0, message = msgLength.format("For Contribution", -5.0, 5.0))], render_kw=textFieldStyle)
+  correctness       = FloatField("Correctness", default=0.0, validators=[DataRequired(), NumberRange(min=-5, max=5, message = msgLength.format("Correctness", -5.0, 5.0))], render_kw=textFieldStyle)
+  wrongness         = FloatField("Wrongness", default=0.0, validators=[DataRequired(), NumberRange(min=-5, max=5, message = msgLength.format("Wrongness", -5.0, 5.0))], render_kw=textFieldStyle)
 
 class CriteriasForm(FlaskForm):
   key = FK = request = None
@@ -253,10 +352,6 @@ class CriteriasForm(FlaskForm):
       self.form['for_contribution'].data   = db_data['for_contribution']
       self.form['correctness'].data        = db_data['correctness']
       self.form['wrongness'].data          = db_data['wrongness']
-      self.form['reported'].data           = db_data['reported']
-      self.form['extra_info'].data         = db_data['extra_info']
-
-      # self.form[''].data           = db_data['']
   
   def save(self):
     cp = self.form.data
@@ -293,13 +388,17 @@ class CriteriasForm(FlaskForm):
       return db_.delete(data)
 
 class Images(FlaskForm):
-  title                 = StringField("Title", validators=[DataRequired()], render_kw=textFieldStyle)
-  upload_image          = FileField("Image File", validators=[], render_kw={'accept': '.jpg, .jpeg, .png'})
-  url_path              = URLField("Image Url(if file not found)", render_kw=textFieldStyle)
+  title                 = StringField("Title", validators=[DataRequired(), Length(min=1, max=50, message = msgLength.format("Title", 1, 250))], render_kw=textFieldStyle)
+
+  upload_image          = FileField("Image File", render_kw={'accept': '.jpg, .jpeg, .png'})
+  
+  url_path              = URLField("Image Url(if file not found)", validators=[Length(min=0, max=1000, message = msgLength.format("Image Url", 0, 1000))], render_kw=textFieldStyle)
+  
   most_contribution     = IntegerField("Most Contribution(by labeller)", default=1, validators=[DataRequired(), NumberRange(min=1, message="The contibution size must be greater than 1")], render_kw=textFieldStyle)
-  classification_type   = SelectField(
-    "Classification Type",
-    choices = [("Binary Classification", "Binary Classification"), ("Multi-Class", "Multi-Class"), ("Multi-Label","Multi-Label")], render_kw=textFieldStyle)
+  
+  classification_type   = SelectField("Classification Type", choices = [("Binary Classification", "Binary Classification"), ("Multi-Class", "Multi-Class"), ("Multi-Label","Multi-Label")], render_kw=selectFieldStyle)
+  
+  is_blob               = BooleanField("Save as BLOB?", default=False, validators=[], render_kw=checkboxFieldStyle)
 
 class ImagesForm(FlaskForm):
   key = FK = request = None
@@ -323,6 +422,7 @@ class ImagesForm(FlaskForm):
       self.form['url_path'].data               = db_data['url_path']
       self.form['most_contribution'].data      = db_data['most_contribution']
       self.form['classification_type'].data    = db_data['classification_type']
+      self.form['is_blob'].data                = db_data['is_blob']
       
       self.criterias = db_.select_query('criterias')
       self.criteria_id = db_data['criteria_id']
@@ -339,7 +439,7 @@ class ImagesForm(FlaskForm):
       filename = './static/uploads/' + secure_filename(str(uuid.uuid1())+'.jpg')
       image_data = self.request.files['form-upload_image'].read()
       open(filename, 'wb').write(image_data)
-      cp['url_path'] = filename[1:]
+      cp['url_path'] = BASE_URL+filename[1:]
 
     cp.pop('csrf_token', None)
     cp.pop('upload_image', None)
@@ -375,15 +475,16 @@ class ImagesForm(FlaskForm):
     }
     if self.key is not None:
       db_ = Database()
+      
+      img_url = str(db_.select_query_by_id(self.key, 'images', 'image_id')['url_path'])
       msg, key = db_.delete(data)
-      if key != -1:
-        img_url = str(db_.select_query_by_id(self.key, 'images', 'image_id')['url_path'])
+      if key > 0:
         if img_url.startswith('/static/uploads/'):
           os.remove('.'+img_url)
       return msg, key
 
 class Labels(FlaskForm):
-  is_correct = BooleanField('Is it correct?', render_kw=textFieldStyle)
+  is_correct = BooleanField('Is it correct?', default=False, validators=[DataRequired()],render_kw=checkboxFieldStyle)
 
 class LabelsForm(FlaskForm):
   key = FK = request = None

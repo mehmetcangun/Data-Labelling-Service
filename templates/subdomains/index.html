@@ -15,16 +15,16 @@
           <input type="search" name="search_domain_name" value="{{ search['search_domain_name'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
         <div class="space-x-2">
-          <label for="Subdomain Name">Subdomain Name</label>
-          <input type="search" name="search_subdomain_name" value="{{ search['search_subdomain_name'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+          <label for="Count of Images used From">Count of Images used From</label>
+          <input type="search" name="search_from_count_images_used" value="{{ search['search_from_count_images_used'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
         <div class="space-x-2">
           <label for="Subdomain Priority Rate">Subdomain Priority Rate</label>
           <input type="search" name="search_subdomain_priority_rate" value="{{ search['search_subdomain_priority_rate'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
         <div class="space-x-2">
-          <label for="Count of Images used From">Count of Images used From</label>
-          <input type="search" name="search_from_count_images_used" value="{{ search['search_from_count_images_used'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+          <label for="Subdomain Name">Subdomain Name</label>
+          <input type="search" name="search_subdomain_name" value="{{ search['search_subdomain_name'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
         <div class="space-x-2">
           <label for="Count of Images used To">Count of Images used To</label>
@@ -86,7 +86,9 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.description }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.subdomain_name }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.subdomain_priority_rate }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ i.icon }} <i class="{{ i.icon }} fa-2x pl-2"></i></td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ i.icon }}
+                   <i class="{{ i.icon }} fa-2x p-2" style="color:{{ i.frontcolor }}; background-color: {{ i.backgroundcolor }};"></i>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.count_images_used }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <a href="{{ url_for('subdomains_details_page', key=i.subdomain_id) }}"  class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>

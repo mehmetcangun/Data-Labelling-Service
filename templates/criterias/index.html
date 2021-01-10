@@ -22,7 +22,6 @@
           <label for="Wrongness From">Wrongness From</label>
           <input type="search" name="search_from_for_contribution" value="{{ search['search_from_for_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
-        
         <div class="space-x-2">
           <label for="For Contribution To">For Contribution To</label>
           <input type="search" name="search_to_for_contribution" value="{{ search['search_to_for_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
@@ -103,9 +102,9 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.surname }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.count_images_used }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <a href="{{ url_for('criterias_update_page', key=i.criteria_id) }}"   class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Update</a>
-                  <a href="{{ url_for('criterias_delete_page', key=i.criteria_id) }}"   class="px-4 py-3 text-base font-medium text-white bg-blue-500 rounded-md">Delete</a>
-                  <a href="{{ url_for('criterias_details_page', key=i.criteria_id) }}"  class="px-4 py-3 text-base font-medium text-white bg-red-500 rounded-md">Details</a>
+                  <a href="{{ url_for('criterias_details_page', key=i.criteria_id) }}"  class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>
+                  <a href="{{ url_for('criterias_update_page', key=i.criteria_id) }}"   class="px-4 py-3 text-base font-medium text-white bg-blue-500 rounded-md">Update</a>
+                  <a href="{{ url_for('criterias_delete_page', key=i.criteria_id) }}"   class="px-4 py-3 text-base font-medium text-white bg-red-500 rounded-md">Delete</a>
                   <a href="{{ url_for('images_add_page', criteria_id=i.criteria_id) }}" class="px-4 py-3 ml-4 text-base font-medium text-white bg-yellow-500 rounded-md">Image Create</a>
                 </td>
               </tr>
