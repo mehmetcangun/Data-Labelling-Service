@@ -1,28 +1,36 @@
 {% extends "layout.html" %}
-{% block title %} Add Label {% endblock %}
+{% block title %} {{ title }} {% endblock %}
 {% block content %}
 
 <div class="container my-5">
-  <h1 class="py-10 my-4 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">Add Label</h1>
+  <h1 class="py-10 my-4 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">{{ title }}</h1>
   <form method="post" action="{{ request.path }}" class="grid gap-2 py-5 mx-10 border-2 border-dotted">
     {{ data.csrf_token }}
     
     {% if data.subdomains %}
-      Search the labels.
-      <table class="table-fixed">
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">
         Choose the subdomain from subdomains.
-        {% for i in data.subdomains %}
-        <tr>
-          <td><input type="radio" name="subdomain_id" value="{{ i['subdomain_id'] }}"></td>
-          <td><span style="padding: 0 4px;margin: 0 2px; background-color: {{i['domain_color']}};"></span>{{ i['domain_name'] }}</td>
-          <td><i class="{{ i['subdomain_icon'] }}"></i>{{ i['subdomain_name'] }}</td>
-          <td>{{ i['domain_description'] }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-    
+      </h2>
+      {% for i in data.subdomains %}
+        <div class="flex mx-auto items-center justify-center">
+          <div class="mx-2">
+            <input type="radio" name="subdomain_id" value="{{ i['subdomain_id'] }}">
+          </div>
+          
+          <div class="mx-2">
+            <span style="padding: 0 4px;margin: 0 2px; background-color: {{i['domain_color']}};"></span>{{ i['domain_name'] }}
+          </div>
+          
+          <div class="mx-2">
+            <i class="{{ i.icon }} fa-2x p-2" style="color:{{ i.frontcolor }}; background-color: {{ i.backgroundcolor }};"></i>{{ i.subdomain_name }}
+          </div>
+          
+          <div class="mx-2">{{ i['domain_description'] }}</div>
+        </div>
+      {% endfor %}
+      
     {% if message %}
-      <h2>{{ message }}</h2>
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">{{ message }}</h2>
     {% endif %}
     
     {% for field, msg in data.errors.items() %}
@@ -49,7 +57,7 @@
 
     {{ data.submit }}
     {% else %}
-    <p>the subdomains are not found or all subdomains are set to the image.</p>
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">The subdomains are not found or All subdomains are set to the image.</h2>
     {% endif %}
   </form>
 </div>

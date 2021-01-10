@@ -1,14 +1,14 @@
 {% extends "layout.html" %}
-{% block title %} Add Subdomain {% endblock %}
+{% block title %} {{ title }} {% endblock %}
 {% block content %}
 
 <div class="container my-5">
-  <h1 class="py-10 my-4 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">Add Subdomain</h1>
+  <h1 class="py-10 my-4 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">{{ title }}</h1>
   <form method="post" action="{{ request.path }}" class="grid gap-2 py-5 mx-10 border-2 border-dotted">
     {{ data.csrf_token }}
     
     {% if message %}
-      <h2>{{ message }}</h2>
+      <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">{{ message }}</h2>
     {% endif %}
     
     {% for field, msg in data.errors.items() %}

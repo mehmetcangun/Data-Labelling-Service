@@ -10,7 +10,7 @@
     <div class="text-center">
       <h3 class="text-indigo-800 text-2xl p-10">Are you sure to delete the <span class="bg-yellow-100 shadow-sm px-2">{{ title.split(' ')[0][:-1] }}</span>?</h3>
       <button type="submit" class="px-10 py-2 text-base font-medium text-white bg-red-500 rounded-md">Submit</button>
-      <a href="{{ url_for( title.split(' ')[0].lower()+'_index_page') }}" class="px-10 py-2 text-base font-medium text-white bg-gray-500 rounded-md h-5 w-20">Cancel</a>
+      <a href="{{ url_for( title.split(' ')[0].lower()+'_index_page', image_id=image_id) }}" class="px-10 py-2 text-base font-medium text-white bg-gray-500 rounded-md h-5 w-20">Cancel</a>
     </div>
   </form>
 </div>

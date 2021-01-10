@@ -169,8 +169,8 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
       message, key = data.save()
       if key != -1:
         if image_id is None:
-          return redirect(url_for(name+"_details_page", key=key))
-        return redirect(url_for(name+"_details_page", key=key, image_id=image_id))
+          return redirect(url_for(name+"_index_page"))
+        return redirect(url_for(name+"_index_page", image_id=image_id))
   
   elif method == 'update':
     data = all_forms[name](key=key, FK=FK, request = request)
@@ -178,16 +178,19 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
       message, detectkey = data.save()
       if detectkey > 0:
         if image_id is None:
-          return redirect(url_for(name+"_details_page", key=key))
-        return redirect(url_for(name+"_details_page", key=key, image_id=image_id))
+          return redirect(url_for(name+"_index_page"))
+        return redirect(url_for(name+"_index_page", image_id=image_id))
     data.init_data()
   
   elif method == 'delete':
     data = all_forms[name](key=key, FK=FK, request = request)
     if request.method == "POST":
       message, key = data.delete()
+      print(message, " ", key)
       if key > 0:
-        return redirect(url_for(name+"_index_page"))
+        if image_id is None:
+          return redirect(url_for(name+"_index_page"))
+        return redirect(url_for(name+"_index_page", image_id=image_id))
   
   elif method == 'details':
     db_ = Database()

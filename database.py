@@ -18,19 +18,21 @@ messages = {
 select_query = {
   'domains': """select d.domain_id, d.domain_name, d.description, d.domain_priority_rate, d.color, count(sd.domain_id) as subdomain_length
         from domains as d left join subdomains as sd on d.domain_id = sd.domain_id
+        %s
         group by d.domain_id""",
   'labels' : """
-        select label_id, domain_name, subdomain_name, description, color, icon, is_correct
+        select label_id, domain_name, subdomain_name, description, color, icon, is_correct, frontcolor, backgroundcolor
         from labels as lb inner join images as img on lb.image_id = img.image_id
         inner join subdomains as sd on sd.subdomain_id = lb.subdomain_id
         inner join domains as d on d.domain_id = sd.domain_id
-        where lb.image_id = %s
+        %s
         """,
   'users': """select u.user_id as user_id, uname, surname, security_answer, email, usertype, points,
          count(cnt.user_id) as contribution_size,
          to_char(last_seen, 'DD Mon YYYY HH24:MI:SS') as last_seen,
          to_char(join_date, 'DD Mon YYYY HH24:MI:SS') as join_date
         from users as u left join contributions as cnt on u.user_id = cnt.user_id
+        %s
         group by u.user_id""",
   'images': """select i.image_id as image_id, title, url_path, 
         count(c.contribution_id) as user_contribution, most_contribution, classification_type,
@@ -41,21 +43,21 @@ select_query = {
         , count(l.label_id) as label_count
         from images as i left join labels as l on i.image_id = l.image_id
                  left join contributions as c on c.label_id = l.label_id
+        %s
         group by i.image_id  
   """,
-  'subdomains_for_label': """select sd.subdomain_id, domain_name, description, subdomain_name, color, icon
+  'subdomains_for_label': """select sd.subdomain_id, domain_name, description, subdomain_name, color, icon, frontcolor, backgroundcolor
       from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id
-      where sd.subdomain_id not in (
-          select subdomain_id from labels where image_id = %s
-      ) 
+      %s
   """,
-  'subdomains' : 'select sd.subdomain_id, domain_name, description, frontcolor, backgroundcolor, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id group by sd.subdomain_id, d.domain_id',
-  'criterias': "select c.criteria_id, for_contribution, correctness, wrongness, uname, surname, count(img.criteria_id) as count_images_used from criterias as c inner join users as u on c.user_id = u.user_id left join images as img on img.criteria_id = c.criteria_id group by c.criteria_id, u.user_id"
+  'subdomains' : 'select sd.subdomain_id, domain_name, description, frontcolor, backgroundcolor, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id %s group by sd.subdomain_id, d.domain_id',
+
+  'criterias': "select c.criteria_id as criteria_id, for_contribution, correctness, wrongness, uname, surname, count(img.criteria_id) as count_images_used from criterias as c inner join users as u on c.user_id = u.user_id left join images as img on img.criteria_id = c.criteria_id %s group by c.criteria_id, u.user_id"
 }
 
 sort_by_tables = {
   'users': {
-    'default':' u.user_id ASC',
+    'default':' u.user_id DESC',
     'points_asc':' points ASC',
     'points_desc':' points DESC',
     'contribution_size_asc':' contribution_size ASC',
@@ -70,7 +72,7 @@ sort_by_tables = {
     'surname_desc':' surname DESC'
   },
   'criterias': {
-    'default': 'criteria_id',
+    'default': 'criteria_id DESC',
     'uname_asc':' uname ASC',
     'uname_desc':' uname DESC',
     'for_contribution_asc':' for_contribution ASC',
@@ -83,7 +85,7 @@ sort_by_tables = {
     'count_images_used_desc':' count_images_used DESC'
   },
   'domains': {
-    'default': 'domain_id',
+    'default': 'domain_id DESC',
     'domain_name_asc':' domain_name ASC',
     'domain_name_desc':' domain_name DESC',
     'domain_priority_rate_asc':' domain_priority_rate ASC',
@@ -92,7 +94,7 @@ sort_by_tables = {
     'subdomain_length_desc':' subdomain_length DESC',
   },
   'images': {
-    'default': 'i.image_id',
+    'default': 'image_id DESC',
     'user_contribution_asc': 'user_contribution ASC',
     'user_contribution_desc': 'user_contribution DESC',
     'most_contribution_asc': 'most_contribution ASC',
@@ -107,7 +109,7 @@ sort_by_tables = {
     'is_favourite_desc': 'is_favourite DESC',
   },
   'subdomains': {
-    'default': 'subdomain_id',
+    'default': 'subdomain_id DESC',
     'domain_name_asc':' domain_name ASC',
     'domain_name_desc':' domain_name DESC',
     'subdomain_name_asc':' subdomain_name ASC',
@@ -118,7 +120,7 @@ sort_by_tables = {
     'count_images_used_desc':' count_images_used DESC'
   },
   'labels': {
-    'default': 'label_id',
+    'default': 'label_id DESC',
     'domain_name_asc':' domain_name ASC',
     'domain_name_desc':' domain_name DESC',
     'subdomain_name_asc':' subdomain_name ASC',
@@ -128,17 +130,91 @@ sort_by_tables = {
   }
 }
 
+group_search_correspond = {
+  'criterias': {
+    'count_images_used': 'count(img.criteria_id)'
+  },
+  'subdomains': {
+    'count_images_used': 'count(lb.image_id)'
+  },
+  'domains': {
+    'subdomain_length': 'count(sd.domain_id)'
+  },
+  'users': {
+    'contribution_size': 'count(cnt.user_id)'
+  },
+  'images': {
+    'user_contribution': 'count(c.contribution_id)',
+    'label_count': 'count(l.label_id)'
+  }
+}
+
 class Database():
-  
-  #is_ordered?
-  #like queries
   def select_query(self, name, data=[], sort_by=None, search=None):
     with dbapi2.connect(DB_URL) as connection:
       with connection.cursor() as cursor:
         query = select_query[name]
+        #search.
+        where = ""
+        
+        search_between = dict()
+        search_group_between = dict()
+        
+        for key in search:
+          if search[key] != '':
+            if key.startswith('search_to_'):
+              if key[10:] not in search_between:
+                search_between[key[10:]] = dict()
+              search_between[key[10:]]['to'] = search[key]
+            elif key.startswith('search_from_'):
+              if key[12:] not in search_between:
+                search_between[key[12:]] = dict()
+              search_between[str(key[12:])]['from'] = search[key]
+            elif key.startswith('search_gto_'):
+              if key[11:] not in search_group_between:
+                search_group_between[key[11:]] = dict()
+              search_group_between[key[11:]]['to'] = search[key]
+            elif key.startswith('search_gfrom_'):
+              if key[13:] not in search_group_between:
+                search_group_between[key[13:]] = dict()
+              search_group_between[str(key[13:])]['from'] = search[key]
+            else:
+              where += '{} = \'{}\' and '.format(key[7:], search[key])
+        
+        if where != '' and name not in ('labels', 'subdomains_for_label'):
+          where = ' where '+where
+        
+        if name == 'labels':
+          where = ' where lb.image_id = %s and '+where
+        elif name == 'subdomains_for_label':
+          where = ' where sd.subdomain_id not in (select subdomain_id from labels where image_id = %s) and '+where
+
+        for key in search_between:
+          if 'from' in search_between[key] and 'to' in search_between[key]:
+            where += ' {} between {} and {} and '.format(key, search_between[key]['from'], search_between[key]['to'])
+          elif 'from' in search_between[key]:
+            where += ' {} >= {} '.format(key, search_between[key]['from'])
+          elif 'to' in search_between[key]:
+            where += ' {} <= {} '.format(key, search_between[key]['to'])
+        
+        where = where[:-4]
+        query = query % where
+        having = " having "
+        for key in search_group_between:
+          if 'from' in search_group_between[key] and 'to' in search_group_between[key]:
+            having += ' {} between {} and {} and '.format(group_search_correspond[name][key], search_group_between[key]['from'], search_group_between[key]['to'])
+          elif 'from' in search_group_between[key]:
+            having += ' {} >= {} and '.format(group_search_correspond[name][key], search_group_between[key]['from'])
+          elif 'to' in search_group_between[key]:
+            having += ' {} <= {} and '.format(group_search_correspond[name][key], search_group_between[key]['to'])
+        
+        having = having[:-4]
+        if len(search_group_between)>0:
+          query += having
+        
+        #sort.        
         if sort_by is not None:
           query = query + ' order by ' + sort_by_tables[name][sort_by]
-        print(query)
         cursor.execute(query, tuple(data))
         
         result = cursor.fetchall()
@@ -146,7 +222,6 @@ class Database():
         result_with_header = list()
         for i in result:
           result_with_header.append(dict(zip(header, i)))
-        #print(result_with_header)
     return result_with_header
   
   def select_query_by_id(self, idd, name, where, query=None):
@@ -172,10 +247,9 @@ class Database():
           cursor.execute(query, tuple(data))
           connection.commit()
           message = messages[method]
-          print(cursor.statusmessage)
+          
           if method == 'insert':
             id_ = cursor.fetchone()[0]
-            print(id_)
             return message, id_
           elif method == 'delete' or method == 'update':
             if cursor.rowcount <= 0:
