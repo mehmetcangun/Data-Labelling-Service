@@ -116,10 +116,24 @@ sort_by = {
     'subdomain_name_desc':'Subdomain Name(Z-A)',
     'subdomain_priority_rate_asc':'Priority Rate(1-10)',
     'subdomain_priority_rate_desc':'Priority Rate(10-1)',
-    'count_images_used_asc':'Count of images used-Increasing',
-    'count_images_used_desc':'Count of images used-Decreasing'
+    'count_images_used_asc':'Count of images used | Increasing',
+    'count_images_used_desc':'Count of images used | Decreasing'
   },
-  'images':{},
+  'images':{
+    'default': 'Default',
+    'user_contribution_asc': 'Total Contribution | Increasing',
+    'user_contribution_desc': 'Total Contribution | Decreasing',
+    'most_contribution_asc': 'Most Contribution | Increasing',
+    'most_contribution_desc': 'Most Contribution | Decreasing',
+    'title_asc': 'Title(A-Z)',
+    'title_desc': 'Title(Z-A)',
+    'classification_type_asc': 'Classification Type(A-Z)',
+    'classification_type_desc': 'Classification Type(Z-A)',
+    'label_count_asc': 'Label Count | Increasing',
+    'label_count_desc': 'Label Count | Decreasing',
+    'is_favourite_asc': 'Not Favourite First',
+    'is_favourite_desc': 'First Favourite'
+  },
   'labels': {
     'default': 'Default',
     'domain_name_asc':'Domain Name(A-Z)',

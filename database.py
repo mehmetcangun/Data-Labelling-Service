@@ -92,7 +92,19 @@ sort_by_tables = {
     'subdomain_length_desc':' subdomain_length DESC',
   },
   'images': {
-    'default': 'i.image_id'
+    'default': 'i.image_id',
+    'user_contribution_asc': 'user_contribution ASC',
+    'user_contribution_desc': 'user_contribution DESC',
+    'most_contribution_asc': 'most_contribution ASC',
+    'most_contribution_desc': 'most_contribution DESC',
+    'title_asc': 'title ASC',
+    'title_desc': 'title DESC',
+    'classification_type_asc': 'classification_type ASC',
+    'classification_type_desc': 'classification_type DESC',
+    'label_count_asc': 'label_count ASC',
+    'label_count_desc': 'label_count DESC',
+    'is_favourite_asc': 'is_favourite ASC',
+    'is_favourite_desc': 'is_favourite DESC',
   },
   'subdomains': {
     'default': 'subdomain_id',
