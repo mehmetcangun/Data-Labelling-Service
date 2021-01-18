@@ -56,9 +56,12 @@ app.add_url_rule("/images/<int:image_id>/labels_add"              , view_func=vi
 app.add_url_rule("/images/<int:image_id>/labels_update/<int:key>" , view_func=views.labels_update_page, methods=['GET', 'POST'])
 app.add_url_rule("/images/<int:image_id>/labels_delete/<int:key>" , view_func=views.labels_delete_page, methods=['GET', 'POST'])
 
+app.add_url_rule("/contribute/<int:image_id>", view_func=views.contribute_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/contribute/<int:image_id>/<int:domain_id>", view_func=views.contribute_add_page, methods=['GET', 'POST'])
+app.add_url_rule("/profile", view_func=views.profile_page, methods=['GET', 'POST'])
+app.add_url_rule("/profile/<int:user_id>", view_func=views.profile_page, methods=['GET', 'POST'])
 
 '''
-app.add_url_rule("/profile/<int:user_key>")
 app.add_url_rule("/contributions/<int:user_key>")
 app.add_url_rule("/delete_my_account")
 '''

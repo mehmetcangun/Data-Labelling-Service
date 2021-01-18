@@ -7,8 +7,6 @@ from passlib.hash import pbkdf2_sha256 as hasher
 from functools import wraps
 from database import Database
 
-def home_page():
-  return render_template("home.html")
 
 class User(UserMixin):
   def __init__(self, email, password):
@@ -16,6 +14,8 @@ class User(UserMixin):
     self.password = password
     self.is_admin = False
     self.uid = None
+    self.name = None
+    self.points = 0
   
   def get_id(self):
     return self.email
@@ -58,6 +58,8 @@ def get_user(user_email):
     user = User(user_email, user_['password'])
     user.is_admin = True if user_['usertype'] == 0 else False
     user.uid = user_['user_id']
+    user.name = user_['uname']
+    user.points = user_['points']
     return user
   return None
 
@@ -157,6 +159,127 @@ sort_by = {
     'count_images_used_desc':'Count of images used-Decreasing'
   }
 }
+
+import psycopg2 as dbapi2
+import os
+DB_URL = os.getenv("DATABASE_URL")
+def home_page():
+  data = None
+  user_id = current_user.uid if current_user.is_authenticated else -1
+  parameters = [user_id]
+  query = """
+    select i.image_id, url_path, for_contribution,correctness, wrongness, count(l.label_id) as label_size,
+        most_contribution - (select count(*) from contributions as c inner join labels as l on c.label_id = l.label_id
+        inner join users as u on u.user_id = c.user_id inner join images as m_i on m_i.image_id = l.image_id
+        where i.image_id = m_i.image_id) as remaining_size
+    from images as i inner join criterias as c on i.criteria_id = c.criteria_id
+        left join labels as l on l.image_id = i.image_id
+        left join subdomains as s on s.subdomain_id = l.subdomain_id
+    where most_contribution > (select count(*) from contributions as c
+        inner join labels as l on c.label_id = l.label_id inner join users as u on u.user_id = c.user_id
+        inner join images as m_i on m_i.image_id = l.image_id 
+        where i.image_id = m_i.image_id
+    )
+    group by i.image_id, c.criteria_id
+    order by RANDOM()
+    LIMIT 50
+    """
+
+  with dbapi2.connect(DB_URL) as connection:
+    with connection.cursor() as cursor:
+      cursor.execute(query, tuple(parameters))
+      result = cursor.fetchall()
+      header = list( cursor.description[i][0] for i in range(0, len(cursor.description)) )
+      result_with_header = list()
+      for i in result:
+        result_with_header.append(dict(zip(header, i)))
+      data  = result_with_header
+  
+  return render_template('home.html', data=data)
+
+def contribute_add_page(image_id, domain_id=None):
+  
+  if request.method == 'POST':
+    selected_labels = request.form.getlist('label_id')
+    db_ = Database()
+    for i in selected_labels:
+      data = {
+        'primary_key': 'contribution_id',
+        'table_name': 'contributions',
+        'data': {
+          'user_id': current_user.uid,
+          'label_id': int(i)
+        },
+        'where': {}
+      }
+      db_.add(data)
+    return redirect(url_for("profile_page"))
+  
+  message = None
+  parameters = [image_id]
+  states = [
+    "Select the domain for contribution",
+    "Select the most appropriate labels for an image"
+  ]
+  if domain_id is not None:
+    count = 0
+    query = """select count(distinct d.domain_id) from contributions as c
+        inner join labels as l on l.label_id = c.label_id
+        inner join subdomains as s on l.subdomain_id = s.subdomain_id
+        inner join domains as d on d.domain_id = s.domain_id
+      where user_id = %s and d.domain_id = %s and l.image_id = %s """
+    
+    with dbapi2.connect(DB_URL) as connection:
+      with connection.cursor() as cursor:
+        cursor.execute(query, (current_user.uid, domain_id, image_id, ))
+        count = cursor.fetchone()[0]
+        print(current_user.uid, " ", count)
+
+    if count == 0:
+      query = """select l.label_id as label_id, l.image_id as image_id, icon, url_path, d.domain_id as domain_id, domain_name, color, subdomain_name, s.subdomain_id as subdomain_id, frontcolor, backgroundcolor
+          from labels as l inner join subdomains as s on l.subdomain_id = s.subdomain_id
+          inner join domains as d on d.domain_id = s.domain_id
+          inner join images as i on i.image_id = l.image_id
+      where l.image_id = %s and d.domain_id = %s"""
+      parameters.append(domain_id)
+    else:
+      domain_id = None
+      message = "The contribution is done before, please select another domain."
+
+  
+  state_key = 0
+  state = states[0]
+  if domain_id is not None:
+    state = states[1]
+    state_key = 1
+  else:
+    query = """
+      select distinct d.domain_id as domain_id, l.image_id as image_id, url_path, domain_name, color
+        from labels as l inner join subdomains as s on l.subdomain_id = s.subdomain_id
+        inner join domains as d on d.domain_id = s.domain_id
+        inner join images as i on i.image_id = l.image_id
+      where l.image_id = %s
+    """
+
+  data = None
+  with dbapi2.connect(DB_URL) as connection:
+    with connection.cursor() as cursor:
+      cursor.execute(query, tuple(parameters))
+      result = cursor.fetchall()
+      header = list( cursor.description[i][0] for i in range(0, len(cursor.description)) )
+      result_with_header = list()
+      for i in result:
+        result_with_header.append(dict(zip(header, i)))
+      data  = result_with_header
+  
+  return render_template('contributions/make_contribution.html', data=data, state=state, state_key=state_key, message=message)
+
+
+def profile_page(user_id=None):
+  profile_id = current_user.uid if user_id is None else user_id
+  print("sa ", profile_id)
+
+  return render_template('users/profile.html')
 
 #@login_required
 #@admin_required

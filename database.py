@@ -16,7 +16,7 @@ messages = {
 }
 
 select_query = {
-  'domains': """select d.domain_id, d.domain_name, d.description, d.domain_priority_rate, d.color, count(sd.domain_id) as subdomain_length
+  'domains': """select d.domain_id as domain_id, domain_name, description, domain_priority_rate, color, count(sd.domain_id) as subdomain_length
         from domains as d left join subdomains as sd on d.domain_id = sd.domain_id
         %s
         group by d.domain_id""",
@@ -46,11 +46,11 @@ select_query = {
         %s
         group by i.image_id  
   """,
-  'subdomains_for_label': """select sd.subdomain_id, domain_name, description, subdomain_name, color, icon, frontcolor, backgroundcolor
+  'subdomains_for_label': """select sd.subdomain_id as subdomain_id, domain_name, description, subdomain_name, color, icon, frontcolor, backgroundcolor
       from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id
       %s
   """,
-  'subdomains' : 'select sd.subdomain_id, domain_name, description, frontcolor, backgroundcolor, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id %s group by sd.subdomain_id, d.domain_id',
+  'subdomains' : 'select sd.subdomain_id as subdomain_id, domain_name, description, frontcolor, backgroundcolor, subdomain_name, subdomain_priority_rate, icon, count(lb.image_id) as count_images_used from domains as d inner join subdomains as sd on d.domain_id = sd.domain_id left join labels as lb on lb.subdomain_id = sd.subdomain_id %s group by sd.subdomain_id, d.domain_id',
 
   'criterias': "select c.criteria_id as criteria_id, for_contribution, correctness, wrongness, uname, surname, count(img.criteria_id) as count_images_used from criterias as c inner join users as u on c.user_id = u.user_id left join images as img on img.criteria_id = c.criteria_id %s group by c.criteria_id, u.user_id"
 }
@@ -154,58 +154,56 @@ class Database():
     query = select_query[name]
     #search.
     where = ""
-    
     search_between = dict()
     search_group_between = dict()
-    
-    for key in search:
-      if search[key] != '':
-        if key.startswith('search_to_'):
-          if key[10:] not in search_between:
-            search_between[key[10:]] = dict()
-          search_between[key[10:]]['to'] = search[key]
-        elif key.startswith('search_from_'):
-          if key[12:] not in search_between:
-            search_between[key[12:]] = dict()
-          search_between[str(key[12:])]['from'] = search[key]
-        elif key.startswith('search_gto_'):
-          if key[11:] not in search_group_between:
-            search_group_between[key[11:]] = dict()
-          search_group_between[key[11:]]['to'] = search[key]
-        elif key.startswith('search_gfrom_'):
-          if key[13:] not in search_group_between:
-            search_group_between[key[13:]] = dict()
-          search_group_between[str(key[13:])]['from'] = search[key]
-        else:
-          # Like usage in Queries https://stackoverflow.com/a/37273764
-          
-          if key.startswith('search_like_'):
-            where += '{} like %s and '.format(key[12:])
-            pattern_wise = '%{}%'.format(search[key])
-            data.append(pattern_wise)
+    if search:
+      for key in search:
+        if search[key] != '':
+          if key.startswith('search_to_'):
+            if key[10:] not in search_between:
+              search_between[key[10:]] = dict()
+            search_between[key[10:]]['to'] = search[key]
+          elif key.startswith('search_from_'):
+            if key[12:] not in search_between:
+              search_between[key[12:]] = dict()
+            search_between[str(key[12:])]['from'] = search[key]
+          elif key.startswith('search_gto_'):
+            if key[11:] not in search_group_between:
+              search_group_between[key[11:]] = dict()
+            search_group_between[key[11:]]['to'] = search[key]
+          elif key.startswith('search_gfrom_'):
+            if key[13:] not in search_group_between:
+              search_group_between[key[13:]] = dict()
+            search_group_between[str(key[13:])]['from'] = search[key]
           else:
-            where += '{} = %s and '.format(key[7:])
-            data.append(search[key])
-    
-    if where != '' and name not in ('labels', 'subdomains_for_label'):
-      where = ' where '+where
+            # Like usage in Queries https://stackoverflow.com/a/37273764
+            if key.startswith('search_like_'):
+              where += '{} like %s and '.format(key[12:])
+              pattern_wise = '%{}%'.format(search[key])
+              data.append(pattern_wise)
+            else:
+              where += '{} = %s and '.format(key[7:])
+              data.append(search[key])
+      if where != '' and name not in ['labels', 'subdomains_for_label']:
+        where = ' where '+where
     
     if name == 'labels':
       where = ' where lb.image_id = %s and '+where
     elif name == 'subdomains_for_label':
       where = ' where sd.subdomain_id not in (select subdomain_id from labels where image_id = %s) and '+where
 
-    for key in search_between:
-      if 'from' in search_between[key] and 'to' in search_between[key]:
-        where += ' {} between %s and %s and '.format(key)
-        data.append(search_between[key]['from'])
-        data.append(search_between[key]['to'])
-      elif 'from' in search_between[key]:
-        where += ' {} >= %s '.format(key)
-        data.append(search_between[key]['from'])
-      elif 'to' in search_between[key]:
-        where += ' {} <= %s '.format(key)
-        data.append(search_between[key]['to'])
+    if search_between:
+      for key in search_between:
+        if 'from' in search_between[key] and 'to' in search_between[key]:
+          where += ' {} between %s and %s and '.format(key)
+          data.append(search_between[key]['from'])
+          data.append(search_between[key]['to'])
+        elif 'from' in search_between[key]:
+          where += ' {} >= %s and '.format(key)
+          data.append(search_between[key]['from'])
+        elif 'to' in search_between[key]:
+          where += ' {} <= %s and '.format(key)
+          data.append(search_between[key]['to'])
     
     where = where[:-4]
     query = query % where
@@ -221,7 +219,7 @@ class Database():
       elif 'to' in search_group_between[key]:
         having += ' {} <= %s and '.format(group_search_correspond[name][key])
         data.append(search_group_between[key]['to'])
-    
+
     having = having[:-4]
     if len(search_group_between)>0:
       query += having
@@ -229,14 +227,14 @@ class Database():
     #sort.        
     if sort_by is not None:
       query = query + ' order by ' + sort_by_tables[name][sort_by]
-    print('KELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
+    
+    print('Hello its me.')
     print(query)
     print(data)
     
     with dbapi2.connect(DB_URL) as connection:
       with connection.cursor() as cursor:
         cursor.execute(query, tuple(data))
-        data.clear()
         result = cursor.fetchall()
         header = list( cursor.description[i][0] for i in range(0, len(cursor.description)) )
         result_with_header = list()

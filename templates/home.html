@@ -1,5 +1,18 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-  <h1 class="text-4xl rounded-xl font-bold shadow-lg p-40 bg-gradient-to-br from-yellow-400 to-orange-500 text-center font-mono uppercase">Data Labelling Service</h1>
+
+  <h1 class="text-4xl rounded-xl font-bold p-10 text-center font-mono uppercase bg-gradient-to-br from-green-400 to-blue-500 text-white shadow-inner">Data Labelling Service</h1>
+  <div class="grid gap-4 my-10 grid-flow-col auto-cols-max">
+    {% for i in data %}
+      <div class="justify-center border-3 border-dotted border-light-blue-500">
+        <img src="{{ i.url_path }}" alt="" width="250" height="150" class="my-2"/>
+        <p class="text-center">
+          <a class="px-4 py-2 text-gray-50 bg-green-500" href="{{ url_for('contribute_add_page', image_id=i.image_id) }}">
+            Contribute
+          </a>
+        </p>
+      </div>
+    {% endfor %}
+  </div>
 {% endblock %}
