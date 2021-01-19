@@ -291,7 +291,7 @@ class SubdomainsForm(FlaskForm):
       self.form['frontcolor'].data               = subdomains['frontcolor']
       self.form['backgroundcolor'].data          = subdomains['backgroundcolor']
       
-      self.domains = db_.select_query('domains')
+      self.domains, status = db_.select_query('domains')
       self.domain_id = subdomains['domain_id']
   
   def save(self):
@@ -430,7 +430,7 @@ class ImagesForm(FlaskForm):
       self.form['classification_type'].data    = db_data['classification_type']
       self.form['is_favourite'].data           = db_data['is_favourite']
       
-      self.criterias = db_.select_query('criterias')
+      self.criterias, status = db_.select_query('criterias')
       self.criteria_id = db_data['criteria_id']
 
   def save(self):
@@ -502,7 +502,7 @@ class LabelsForm(FlaskForm):
     self.request = kwargs['request']
     
     subdomains = Database()
-    self.subdomains = subdomains.select_query(name="subdomains_for_label", data=[(self.FK[0][1],)])
+    self.subdomains, status = subdomains.select_query(name="subdomains_for_label", data=[(self.FK[0][1],)])
   
   form = FormField(Labels)
   submit = SubmitField(render_kw=submitFieldStyle)
