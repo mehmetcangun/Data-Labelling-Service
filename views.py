@@ -404,7 +404,6 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
   elif method == 'details':
     db_ = Database()
     data = db_.select_query_by_id(key, name, name[:-1]+'_id')
-    print(data, " ", key)
 
   elif method == 'index':
     
@@ -416,9 +415,16 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
 
     db_ = Database()
     if image_id is None:
-      data = db_.select_query(name, sort_by=sort_by_get, search=search_set, data=[])
+      data, status = db_.select_query(name, sort_by=sort_by_get, search=search_set, data=[])
+      message = data
+      if status == -1:
+        data, status = db_.select_query(name,sort_by='default', search={}, data=[])
     else:
-      data = db_.select_query(name, data=[image_id, ], sort_by=sort_by_get, search=search_set)
+      data, status = db_.select_query(name, data=[image_id, ], sort_by=sort_by_get, search=search_set)
+      message = data
+      if status == -1:
+        data, status = db_.select_query(name, data=[image_id, ], sort_by='default', search={})
+      
     
     return render_template(name + "/" + method + ".html", 
               data=data, 
