@@ -562,7 +562,6 @@ def users_change_password_page():
 
 @login_required
 def users_update_page(key):
-  print(key, " ", current_user.uid, " ", current_user.is_admin)
   if not current_user.is_admin and key != current_user.uid:
     return redirect(url_for("home_page"))
   
@@ -571,6 +570,9 @@ def users_update_page(key):
   if form.validate_on_submit():
     message, detectkey = form.save()
     if detectkey > 0:
-      return redirect(url_for("profile_page"))
+      if form['email'].data != current_user.email:
+        return redirect(url_for("login_page"))
+      else:
+        return redirect(url_for("profile_page"))
   form.init_data()
   return render_template('users/update.html', data=form, message=message)
