@@ -190,7 +190,7 @@ def update_whole_points(user_id):
              and image_id = l.image_id
              and is_correct = true
            group by domain_id, image_id
-       ), 0) - wrongness * (count((d.domain_id, l.image_id)) - COALESCE((
+       ), 0) + wrongness * (count((d.domain_id, l.image_id)) - COALESCE((
        select count((domain_id, image_id))
        FROM (select l.label_id, l.image_id, d.domain_id, is_correct
                 from labels as l
