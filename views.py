@@ -68,7 +68,10 @@ def logout_page():
   logout_user()
   return redirect(url_for("home_page"))
 
+
 def admin_required(f):
+  
+  @login_required
   @wraps(f)
   def check_user_type(*args, **kwargs):
     if current_user.is_admin == False:
@@ -163,9 +166,67 @@ sort_by = {
 import psycopg2 as dbapi2
 import os
 DB_URL = os.getenv("DATABASE_URL")
+
+def update_whole_points(user_id):
+  query = """
+    update users set points = (select SUM(points) from (select for_contribution + correctness * COALESCE((
+           select count((domain_id, image_id))
+           FROM (select l.label_id, l.image_id, d.domain_id, is_correct
+                    from labels as l
+                             inner join subdomains as s on s.subdomain_id = l.subdomain_id
+                             inner join domains as d on d.domain_id = s.domain_id
+                    group by l.image_id, d.domain_id, l.label_id
+                    INTERSECT
+                    select l.label_id, l.image_id, d.domain_id, true as is_correct
+                    from labels as l
+                             inner join subdomains as s on s.subdomain_id = l.subdomain_id
+                             inner join domains as d on d.domain_id = s.domain_id
+                             inner join contributions as c on c.label_id = l.label_id
+                    where c.user_id = %s
+                    group by l.image_id, d.domain_id, l.label_id
+                ) as calc
+           where domain_id = d.domain_id
+             and image_id = l.image_id
+             and is_correct = true
+           group by domain_id, image_id
+       ), 0) - wrongness * count((d.domain_id, l.image_id)) - COALESCE((
+       select count((domain_id, image_id))
+       FROM (select l.label_id, l.image_id, d.domain_id, is_correct
+                from labels as l
+                         inner join subdomains as s on s.subdomain_id = l.subdomain_id
+                         inner join domains as d on d.domain_id = s.domain_id
+                group by l.image_id, d.domain_id, l.label_id
+                INTERSECT
+                select l.label_id, l.image_id, d.domain_id, true as is_correct
+                from labels as l
+                         inner join subdomains as s on s.subdomain_id = l.subdomain_id
+                         inner join domains as d on d.domain_id = s.domain_id
+                         inner join contributions as c on c.label_id = l.label_id
+                where c.user_id = %s
+                group by l.image_id, d.domain_id, l.label_id
+            ) as calc2
+       where domain_id = d.domain_id
+         and image_id = l.image_id
+         and is_correct = true
+       group by domain_id, image_id
+   ), 0) as points
+      from labels as l
+               inner join subdomains as s on s.subdomain_id = l.subdomain_id
+               inner join domains as d on d.domain_id = s.domain_id
+               inner join images as i on i.image_id = l.image_id
+               inner join criterias as c on c.criteria_id = i.criteria_id
+      group by l.image_id, d.domain_id, c.criteria_id
+) as result) where user_id = %s
+  """
+  with dbapi2.connect(DB_URL) as connection:
+    with connection.cursor() as cursor:
+      cursor.execute(query, (user_id, user_id, user_id, ))
+      connection.commit()
+
 def home_page():
   data = None
   user_id = current_user.uid if current_user.is_authenticated else -1
+  
   parameters = [user_id]
   query = """
     select i.image_id, url_path, for_contribution,correctness, wrongness, count(l.label_id) as label_size,
@@ -197,6 +258,7 @@ def home_page():
   
   return render_template('home.html', data=data)
 
+@login_required
 def contribute_add_page(image_id, domain_id=None):
   
   if request.method == 'POST':
@@ -274,15 +336,35 @@ def contribute_add_page(image_id, domain_id=None):
   
   return render_template('contributions/make_contribution.html', data=data, state=state, state_key=state_key, message=message)
 
-
 def profile_page(user_id=None):
-  profile_id = current_user.uid if user_id is None else user_id
-  print("sa ", profile_id)
+  profile_id = current_user.uid if user_id is None and current_user.is_authenticated else user_id
+  update_whole_points(profile_id)
+  
+  db_ = Database()
+  profile_info = db_.select_query_by_id(profile_id, "users", "user_id")
+  parameters = [profile_id]
+  query = """
+    select i.image_id, i.url_path, count(distinct d.domain_id) as cont_size
+      from contributions as c
+          inner join labels as l on c.label_id = l.label_id
+          inner join images as i on l.image_id = i.image_id
+          inner join subdomains as s on s.subdomain_id = l.subdomain_id
+          inner join domains as d on d.domain_id = s.domain_id
+      where c.user_id = %s
+      group by i.image_id
+    """
+  with dbapi2.connect(DB_URL) as connection:
+    with connection.cursor() as cursor:
+      cursor.execute(query, tuple(parameters))
+      result = cursor.fetchall()
+      header = list( cursor.description[i][0] for i in range(0, len(cursor.description)) )
+      result_with_header = list()
+      for i in result:
+        result_with_header.append(dict(zip(header, i)))
+      data  = result_with_header 
+  return render_template('users/profile.html', data=data, profile_info=profile_info)
 
-  return render_template('users/profile.html')
 
-#@login_required
-#@admin_required
 def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=None):
   data = None
   message = ""
@@ -309,7 +391,6 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
     data = all_forms[name](key=key, FK=FK, request = request)
     if request.method == "POST":
       message, key = data.delete()
-      print(message, " ", key)
       if key > 0:
         if image_id is None:
           return redirect(url_for(name+"_index_page"))
@@ -318,7 +399,8 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
   elif method == 'details':
     db_ = Database()
     data = db_.select_query_by_id(key, name, name[:-1]+'_id')
-  
+    print(data, " ", key)
+
   elif method == 'index':
     
     sort_by_get = request.args['sort_by'] if 'sort_by' in request.args else 'default'
@@ -345,94 +427,122 @@ def form_operation(name, method, key=None, only_admin=True, FK=None, image_id=No
 
   return render_template(name + "/" + method + ".html", data=data, message=message, image_id=image_id, title=str(name).capitalize() + " / " + str(method).capitalize())
 
+@admin_required
 def domains_index_page():
   return form_operation('domains', 'index')
 
+@admin_required
 def domains_add_page():
   return form_operation('domains', 'add')
 
+@admin_required
 def domains_update_page(key):
   return form_operation('domains', 'update', key=key)
 
+@admin_required
 def domains_delete_page(key):
   return form_operation('domains', 'delete', key=key)
-  
+
+@admin_required
 def domains_details_page(key):
   return form_operation('domains', 'details', key=key)
 
+@admin_required
 def subdomains_index_page():
   return form_operation('subdomains', 'index')
 
+@admin_required
 def subdomains_add_page(domain_id):
   return form_operation('subdomains', 'add', FK=[('domain_id', domain_id)])
 
+@admin_required
 def subdomains_update_page(key):
   return form_operation('subdomains', 'update', key=key)
 
+@admin_required
 def subdomains_delete_page(key):
   return form_operation('subdomains', 'delete', key=key)
 
+@admin_required
 def subdomains_details_page(key):
   return form_operation('subdomains', 'details', key=key)
 
+@admin_required
 def criterias_index_page():
   return form_operation('criterias', 'index')
 
+@admin_required
 def criterias_add_page():
   user_id = current_user.uid
   return form_operation('criterias', 'add', FK=[('user_id', user_id)])
 
+@admin_required
 def criterias_update_page(key):
   return form_operation('criterias', 'update', key=key)
 
+@admin_required
 def criterias_delete_page(key):
   return form_operation('criterias', 'delete', key=key)
 
+@admin_required
 def criterias_details_page(key):
   return form_operation('criterias', 'details', key=key)
 
+@admin_required
 def images_index_page():
   return form_operation('images', 'index')
 
+@admin_required
 def images_add_page(criteria_id):
   user_id = current_user.uid
   return form_operation('images', 'add', FK=[('user_id', user_id), ('criteria_id', criteria_id)])
 
+@admin_required
 def images_update_page(key):
   return form_operation('images', 'update', key=key)
 
+@admin_required
 def images_delete_page(key):
   return form_operation('images', 'delete', key=key)
 
+@admin_required
 def images_details_page(key):
   return form_operation('images', 'details', key=key)
 
+@admin_required
 def labels_index_page(image_id):
   return form_operation('labels', 'index', FK=[('image_id', image_id)], image_id=image_id)
 
+@admin_required
 def labels_add_page(image_id):
   return form_operation('labels', 'add', FK=[('image_id', image_id)], image_id=image_id)
 
+@admin_required
 def labels_update_page(image_id, key):
   return form_operation('labels', 'update', key=key, FK=[('image_id', image_id)], image_id=image_id)
 
+@admin_required
 def labels_delete_page(image_id, key):
   return form_operation('labels', 'delete', key=key, FK=[('image_id', image_id)], image_id=image_id)
 
+@admin_required
 def labels_details_page(image_id, key):
   return form_operation('labels', 'details', key=key, FK=[('image_id', image_id)], image_id=image_id)
 
+@admin_required
 def users_index_page():
   return form_operation('users', 'index')
 
 def users_add_page(usertype):
   return form_operation('users', 'add', FK=[('usertype', usertype-8)])
 
+@admin_required
 def users_delete_page(key):
   return form_operation('users', 'delete', key=key)
-  
+
+@admin_required
 def users_details_page(key):
-  return form_operation('users', 'details', key=key)
+  return redirect(url_for("profile_page", user_id=key))
 
 def users_change_password_page():
   c_uid = current_user.uid if current_user.is_authenticated else None
@@ -446,14 +556,18 @@ def users_change_password_page():
   form.init()
   return render_template('users/change_password.html', data=form, message=message)
 
+@login_required
 def users_update_page(key):
+  print(key, " ", current_user.uid, " ", current_user.is_admin)
+  if not current_user.is_admin and key != current_user.uid:
+    return redirect(url_for("home_page"))
+  
   form = UsersEdit(key=key)
   message = ""
   if form.validate_on_submit():
     message, detectkey = form.save()
     flash(message)
     if detectkey > 0:
-      return redirect(url_for("users_index_page"))
+      return redirect(url_for("profile_page"))
   form.init_data()
-
   return render_template('users/update.html', data=form, message=message)

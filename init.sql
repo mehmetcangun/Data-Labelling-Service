@@ -15,33 +15,34 @@
 */
 create table if not exists users(
 	user_id   SERIAL PRIMARY KEY,
-	name      varchar(30) NOT NULL,
+	uname      varchar(30) NOT NULL,
 	surname   varchar(30) NOT NULL,
 	email     varchar(100) UNIQUE NOT NULL,
 	password  varchar(1000) NOT NULL,
+	security_answer varchar(30) NOT NULL,
 	usertype  int NOT NULL DEFAULT 1,
 	points    float NOT NULL DEFAULT 0.0,
 	last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	CHECK ( usertype != 1 or usertype != 0)
 );
 
-/* Prior domain's value is range 1 to 10 */
-create domain prior as int
-    check ( value >= 1 and value <= 10);
+-- Prior domain's value is range 1 to 10
+create domain prior as int check ( value >= 1 and value <= 10);
 
 /*
 	Domains Table.
 	- name: like Animal.
     - description: about
 	- priority_rate: rate 1 to 10, 10 is higher rate than 1.
-	- color: hex value #FF0000 for Red
+	- color: hex value #FF0000
 */
 create table if not exists domains(
 	domain_id     SERIAL PRIMARY KEY,
-	name          varchar(50) UNIQUE NOT NULL,
+	domain_name   varchar(50) UNIQUE NOT NULL,
 	description   varchar(1000) not null,
-	priority_rate prior not null,
-	color         varchar(6) not null
+	domain_priority_rate prior not null,
+	color         varchar(7) not null
 );
 
 /*
@@ -58,10 +59,11 @@ create table if not exists domains(
 create table if not exists subdomains(
 	subdomain_id      SERIAL PRIMARY KEY,
 
-	name              varchar(50)  NOT NULL,
-	priority_rate     prior not null,
-	icon              varchar(25),
-
+	subdomain_name    varchar(50)  NOT NULL,
+	subdomain_priority_rate prior not null,
+	icon varchar(25),
+	frontcolor varchar(7) DEFAULT '#000000',
+	backgroundcolor varchar(7) DEFAULT '#FFFFFF',
 	domain_id         INT NOT NULL,
 
 	/* if the domain has subdomains,
@@ -75,11 +77,8 @@ create table if not exists subdomains(
 		ON DELETE RESTRICT
 );
 
-/*
-    The criterias determined with the 'criteria_selection' domain.
-*/
-create domain criteria_selection as float
-    CHECK ( VALUE >= -5.0 and VALUE <= 5.0 );
+-- The criterias determined with the 'criteria_selection' domain.
+create domain criteria_selection as float CHECK ( VALUE >= -5.0 and VALUE <= 5.0 );
 
 /*
 	Criteria Table.
@@ -87,8 +86,6 @@ create domain criteria_selection as float
 	- for_contribution: entry point for contribution
 	- correctness: if correct, the point is added.
 	- wrongness: if wrong, the point is substracted.
-	- reported: if the report is done, the point is added.
-	- extra_info: if the extra_info is given, the point is added.
 
 	: Only the admins creates a criteria by referencing the User table.
 */
@@ -97,21 +94,15 @@ create table if not exists criterias(
 	for_contribution criteria_selection NOT NULL DEFAULT 1.0,
 	correctness      criteria_selection NOT NULL DEFAULT 0.0,
 	wrongness        criteria_selection NOT NULL DEFAULT 0.0,
-	reported         criteria_selection NOT NULL DEFAULT 0.0,
-	extra_info       criteria_selection NOT NULL DEFAULT 0.0,
 	user_id         INT,
-	/*
-	    if the user(admin) leaves,
-	    the criterias can be reassigned to another admin
-	*/
+    -- if the user(admin) leaves, the criterias must be reassigned to another admin so restricted.
 	FOREIGN KEY(user_id)
 		REFERENCES users(user_id)
 	    ON UPDATE CASCADE
-		ON DELETE SET NULL
+		ON DELETE RESTRICT
 );
 
-create type classtype as
-    enum ('Binary Classification', 'Multi-Class', 'Multi-Label');
+create type classtype as enum ('Binary Classification', 'Multi-Class', 'Multi-Label');
 
 /*
     Images table.
@@ -126,25 +117,24 @@ create type classtype as
       by using criteria_id reference from Criteria Table.
 */
 create table if not exists images(
-	images_id             SERIAL PRIMARY KEY,
+	image_id             SERIAL PRIMARY KEY,
 
 	title                 varchar(250) NOT NULL,
-	url_path              varchar(250) NOT NULL,
+	url_path              varchar(1000) NOT NULL,
 	most_contribution     int,
 	classification_type   classtype,
+	is_favourite          boolean  default false not null,
 
-	user_id               INT,
+	user_id               INT NOT NULL,
 	criteria_id           INT NOT NULL,
-	/*
-	   if the user(admin) leaves,
-	   the images can be reassigned to another admin
-	*/
+
+	-- if the user(admin) leaves, the images must be reassigned to another admin so restricted.
 	FOREIGN KEY(user_id)
 		REFERENCES users(user_id)
 	    ON UPDATE CASCADE
-		ON DELETE SET NULL,
-	/* if the image has criteria, the delete operation is restricted */
-	/* otherwise, the criteria is deleted. */
+		ON DELETE RESTRICT,
+	-- if the image has criteria, the delete operation is restricted
+	-- otherwise, the criteria is deleted.
 	FOREIGN KEY(criteria_id)
 		REFERENCES criterias(criteria_id)
 		ON UPDATE CASCADE
@@ -164,7 +154,7 @@ create table if not exists labels(
 	is_correct    BOOLEAN NOT NULL DEFAULT FALSE,
 
 	subdomain_id  INT NOT NULL,
-	images_id     INT NOT NULL,
+	image_id     INT NOT NULL,
 
 	/* if the label has subdomain, the delete operation is restricted. */
 	/* otherwise, the subdomain is deleted. */
@@ -174,32 +164,22 @@ create table if not exists labels(
 		ON DELETE RESTRICT,
 
 	/* if the image is deleted, the labels are not necessary anymore. */
-	FOREIGN KEY(images_id)
-		REFERENCES images(images_id)
+	FOREIGN KEY(image_id)
+		REFERENCES images(image_id)
 		ON UPDATE CASCADE
 	    ON DELETE CASCADE
 );
 
-/* reports type is used in contributions table. */
-create type reports as enum ('blur image', 'no image', 'no correct answer');
-
 /*
     Contributions table.
-    - label_id: provides to access image and its subdomains
-    - reported: enum type, only can be reports' type values or NULL.
-    - extra_info: the details about image when contribution is done by labeller.
 
     : Contribution determined with labels providing image and its subdomains.
     : Labeller contributes to images so the contribution is related to user.
 */
 create table if not exists contributions(
 	contribution_id SERIAL PRIMARY KEY,
-
-	label_id        int NOT NULL,
-	reported        reports,
-	extra_info      varchar(1500),
-
-	user_id         int,
+    label_id        int NOT NULL,
+    user_id         int,
 
 	/* if the label is deleted, there is no need this contribution. */
 	FOREIGN KEY(label_id)

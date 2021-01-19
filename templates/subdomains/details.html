@@ -1,11 +1,28 @@
 {% extends "layout.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-{% if data %}
-    <br />
-    <p>Name: {{ data.name }}</p>
-    <p>priority_rate: {{ data.priority_rate }}</p>
-    <p>icon: {{  data.icon }}</p>
-    <p><a href="{{ url_for('domains_details_page', key=data.domain_id) }}"class="btn">Domain Details</a></p>
-{% endif %}
+  <h1 class="py-10 my-10 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">{{title}}</h1>
+  {% if data %}
+  
+    <div class="grid grid-cols-1 text-center">
+      <div>
+        <p>Name: {{ data.subdomain_name }}</p>
+        <p>Priority Rate: {{ data.subdomain_priority_rate }}</p>
+        <p>
+          <i class="{{ data.icon }} fa-4x p-2" style="color:{{ data.frontcolor }}; background-color: {{ data.backgroundcolor }};"></i>
+        </p>
+      </div>
+    </div>
+    <div class="flex justify-center gap-10">
+      <p class="my-10">
+        <a class="bg-indigo-900 text-white px-10 py-5" href="{{ url_for('domains_details_page', key=data.domain_id) }}" target="_self">Domain Details</a>
+      </p>
+      <p class="my-10">
+        <a href="{{ url_for('subdomains_update_page', key=data.subdomain_id) }}" class="bg-yellow-600 text-white px-10 py-5">Subdomain Update</a>
+      </p>
+      <p class="my-10">
+        <a href="{{ url_for('subdomains_delete_page', key=data.subdomain_id) }}" class="bg-red-600 text-white px-10 py-5">Subdomain Delete</a>
+      </p>
+    </div>
+  {% endif %}
 {% endblock %}

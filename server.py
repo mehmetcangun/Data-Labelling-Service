@@ -79,6 +79,5 @@ app.register_error_handler(404, page_not_found)
 app.register_error_handler(403, page_no_authorization)
 
 if __name__ == "__main__":
-  app = create_app()
   port = app.config.get("PORT", 5000)
   app.run("127.0.0.1", port=port)

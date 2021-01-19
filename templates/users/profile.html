@@ -1,6 +1,43 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-  PROFILE PAGE!
-  <a class="bg-gray-700 text-gray-50 rounded-xl px-6 py-4 mx-1" href="{{ url_for('users_change_password_page') }}">Change Password</a>
+  <h1 class="py-10 my-10 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">Profile</h1>
+  <div class="grid grid-cols-2 text-center">
+    <div>
+      <p>Name: {{ profile_info.uname }}</p>
+      <p>Surname: {{ profile_info.surname }}</p>
+      <p>Points: {{ profile_info.points }}</p>
+    </div>
+    <div>
+      <p>Contact: {{ profile_info.email }}</p>
+      <p>Last Seen: {{ profile_info.last_seen.strftime('%d-%m-%Y %H:%M:%S') }}</p>
+      <p>Join Date: {{ profile_info.join_date.strftime('%d-%m-%Y %H:%M:%S') }}</p>
+    </div>
+  </div>
+  <h1 class="my-10 py-1 my-4 text-center bg-blue-800 shadow-lg ring-8 ring-blue-500 text-gray-50">Contributed Images</h1>
+  <div class="grid gap-4 my-10 grid-flow-col auto-cols-max">
+    {% for i in data %}
+      <div class="justify-center border-3 border-dotted border-light-blue-500">
+        <img src="{{ i.url_path }}" alt="" width="150" height="150" class="my-2"/>
+        <p class="text-center">
+          Contibuted Count {{ i.cont_size }}
+        </p>
+        <p class="text-center my-2">
+          <a class=" px-4 py-2 text-gray-50 bg-green-500" href="{{ url_for('contribute_add_page', image_id=i.image_id) }}">
+            Contribute
+          </a>
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="flex justify-center gap-10">
+    <a class="bg-gray-700 text-gray-50 rounded-xl px-6 py-4 mx-1" href="{{ url_for('users_change_password_page') }}">Change Password</a>
+    {% if current_user.is_authenticated %}
+      <a class="bg-gray-700 text-gray-50 rounded-xl px-6 py-4 mx-1" href="{{ url_for('users_update_page', key=current_user.uid) }}">Update Your Information</a>
+    {% endif %}    
+  </div>
+  
+  
+  
 {% endblock %}

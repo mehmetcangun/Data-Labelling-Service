@@ -1,13 +1,32 @@
 {% extends "layout.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-{% if data %}
-    <br />
-    <p>title: {{ data.title }}</p>
-    <p>url_path: {{ data.url_path }}</p>
-    <p>most_contribution: {{  data.most_contribution }}</p>
-    <p>classification_type: {{  data.classification_type }}</p>
-    <p>user_id: {{  data.user_id }}</p>
-    <p>criteria_id: {{  data.criteria_id }}</p>
-{% endif %}
+<h1 class="py-10 my-4 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">{{ title }}</h1>
+  {% if data %}
+    <div class="grid grid-cols-2 text-center">
+      <div>
+        <p>Title: {{ data.title }}</p>
+        <p>Most Contribution: {{  data.most_contribution }}</p>
+        <p>Classification Type: {{  data.classification_type }}</p>
+      </div>
+      <div>
+        <img src="{{ data.url_path }}" alt="" width="250" height="150">
+      </div>
+    </div>
+
+    <div class="flex justify-center gap-10">
+      <p class="my-10">
+        <a class="bg-indigo-900 text-white px-10 py-5" href="{{ url_for('profile_page', key=data.user_id) }}" target="_self">User Details</a>
+      </p>
+      <p class="my-10">
+        <a class="bg-blue-900 text-white px-10 py-5" href="{{ url_for('criterias_details_page', key=data.criteria_id) }}" target="_self">Criteria Details</a>
+      </p>
+      <p class="my-10">
+        <a href="{{ url_for('images_update_page', key=data.image_id) }}" class="bg-yellow-600 text-white px-10 py-5">Image Update</a>
+      </p>
+      <p class="my-10">
+        <a href="{{ url_for('images_delete_page', key=data.image_id) }}" class="bg-red-600 text-white px-10 py-5">Image Delete</a>
+      </p>
+    </div>
+  {% endif %}
 {% endblock %}

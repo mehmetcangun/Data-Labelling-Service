@@ -1,12 +1,23 @@
 {% extends "layout.html" %}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
-{% if data %}
-    <br />
-    <p>for_contribution = {{ data.for_contribution }}</p>
-    <p>correctness      = {{ data.correctness      }}</p>
-    <p>wrongness        = {{ data.wrongness        }}</p>
-    <p>reported         = {{ data.reported         }}</p>
-    <p>extra_info       = {{ data.extra_info       }}</p>
-{% endif %}
+<h1 class="py-10 my-10 text-5xl text-center bg-gray-800 shadow-lg ring-8 ring-gray-500 text-gray-50">{{title}}</h1>
+  {% if data %}
+    <div class="grid grid-cols-1 text-center">
+      <div>
+        <p>For Contribution : {{ data.for_contribution }}</p>
+        <p>Correctness      : {{ data.correctness      }}</p>
+        <p>Wrongness        : {{ data.wrongness        }}</p>
+      </div>
+    </div>
+
+    <div class="flex justify-center gap-10">
+      <p class="my-10">
+        <a href="{{ url_for('criterias_update_page', key=data.criteria_id) }}" class="bg-yellow-600 text-white px-10 py-5">Criteria Update</a>
+      </p>
+      <p class="my-10">
+        <a href="{{ url_for('criterias_delete_page', key=data.criteria_id) }}" class="bg-red-600 text-white px-10 py-5">Criteria Delete</a>
+      </p>
+    </div>
+  {% endif %}
 {% endblock %}

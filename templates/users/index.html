@@ -68,6 +68,9 @@
                   Surname
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                  User Type
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                   Contribution Size
                 </th>
                 <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
@@ -89,12 +92,17 @@
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.uname }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.surname }}</td>
+                {% if i.usertype == 0 %}
+                  <td class="px-6 py-4 whitespace-nowrap">Admin</td>
+                {% else %}
+                  <td class="px-6 py-4 whitespace-nowrap">Labeller</td>
+                {% endif %}
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.contribution_size }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.points }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.last_seen }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.join_date }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <a href="{{ url_for('users_details_page', key=i.user_id) }}"class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>
+                  <a href="{{ url_for('profile_page', key=i.user_id) }}"class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>
                   <a href="{{ url_for('users_update_page', key=i.user_id) }}" class="px-4 py-3 text-base font-medium text-white bg-blue-500 rounded-md">Update</a>
                   <a href="{{ url_for('users_delete_page', key=i.user_id) }}" class="px-4 py-3 text-base font-medium text-white bg-red-500 rounded-md">Delete</a>
                 </td>

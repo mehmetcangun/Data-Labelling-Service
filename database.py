@@ -6,7 +6,7 @@ messages = {
   'insert' : 'The data is added.',
   'update' : 'The data is updated.',
   'delete' : 'The data is deleted.',
-  'domains_name_key': 'Domain key should be unique, please try again.',
+  'domains_domain_name_key': 'Domain key should be unique, please try again.',
   'subdomains_domain_id_fkey': 'Domain has subdomains so the domain key should not deleted.',
   'labels_subdomain_id_fkey': 'Subdomain has been used in labels so the subdomain could not be deleted.',
   'images_criteria_id_fkey': 'This criteria have images so the criteria could not be deleted.',
@@ -156,6 +156,7 @@ class Database():
     where = ""
     search_between = dict()
     search_group_between = dict()
+    print(search)
     if search:
       for key in search:
         if search[key] != '':
@@ -184,7 +185,12 @@ class Database():
             else:
               where += '{} = %s and '.format(key[7:])
               data.append(search[key])
-      if where != '' and name not in ['labels', 'subdomains_for_label']:
+      print("yes i am here beybe.")
+      print(search_between)
+      print(search_group_between)
+      print(where)
+      
+      if (search_between or where != '') and name not in ['labels', 'subdomains_for_label']:
         where = ' where '+where
     
     if name == 'labels':
@@ -196,14 +202,14 @@ class Database():
       for key in search_between:
         if 'from' in search_between[key] and 'to' in search_between[key]:
           where += ' {} between %s and %s and '.format(key)
-          data.append(search_between[key]['from'])
-          data.append(search_between[key]['to'])
+          data.append(int(search_between[key]['from']))
+          data.append(int(search_between[key]['to']))
         elif 'from' in search_between[key]:
           where += ' {} >= %s and '.format(key)
-          data.append(search_between[key]['from'])
+          data.append(int(search_between[key]['from']))
         elif 'to' in search_between[key]:
           where += ' {} <= %s and '.format(key)
-          data.append(search_between[key]['to'])
+          data.append(int(search_between[key]['to']))
     
     where = where[:-4]
     query = query % where
@@ -211,14 +217,14 @@ class Database():
     for key in search_group_between:
       if 'from' in search_group_between[key] and 'to' in search_group_between[key]:
         having += ' {} between %s and %s and '.format(group_search_correspond[name][key])
-        data.append(search_group_between[key]['from'])
-        data.append(search_group_between[key]['to'])
+        data.append(int(search_group_between[key]['from']))
+        data.append(int(search_group_between[key]['to']))
       elif 'from' in search_group_between[key]:
         having += ' {} >= %s and '.format(group_search_correspond[name][key])
-        data.append(search_group_between[key]['from'])
+        data.append(int(search_group_between[key]['from']))
       elif 'to' in search_group_between[key]:
         having += ' {} <= %s and '.format(group_search_correspond[name][key])
-        data.append(search_group_between[key]['to'])
+        data.append(int(search_group_between[key]['to']))
 
     having = having[:-4]
     if len(search_group_between)>0:

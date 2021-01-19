@@ -10,9 +10,34 @@
         </div>
       </div>
       <div class="grid items-center grid-cols-3 gap-4 p-4 mx-5 my-5 border-2 border-gray-200 border-dotted">
+        
         <div class="space-x-2">
-          <label for="Name">Name</label>
-          <input type="search" name="search_like_name" value="{{ search['search_like_name'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+          <label for="Total Contribution by Users From">Total Contribution by Users From</label>
+          <input type="search" name="search_gfrom_user_contribution" value="{{ search['search_gfrom_user_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Most Contribution From">Most Contribution From</label>
+          <input type="search" name="search_from_most_contribution" value="{{ search['search_from_most_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Label Size From">Label Size From</label>
+          <input type="search" name="search_gfrom_label_count" value="{{ search['search_gfrom_label_count'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Total Contribution by Users To">Total Contribution by Users To</label>
+          <input type="search" name="search_gto_user_contribution" value="{{ search['search_gto_user_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Most Contribution To">Most Contribution To</label>
+          <input type="search" name="search_to_most_contribution" value="{{ search['search_to_most_contribution'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Label Size To">Label Size To</label>
+          <input type="search" name="search_gto_label_count" value="{{ search['search_gto_label_count'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
+        </div>
+        <div class="space-x-2">
+          <label for="Title">Title</label>
+          <input type="search" name="search_like_title" value="{{ search['search_like_title'] }}" class="px-4 py-1 text-white bg-gray-300 focus:bg-gray-50 focus:text-black">
         </div>
         <div class="space-x-2">
           <button type="submit" class="w-full px-2 py-1 text-base font-medium text-white bg-yellow-500 rounded-md">Filter</button>
