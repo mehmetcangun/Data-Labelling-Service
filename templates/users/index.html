@@ -102,7 +102,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.last_seen }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">{{ i.join_date }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <a href="{{ url_for('profile_page', key=i.user_id) }}"class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>
+                  <a href="{{ url_for('profile_page', user_id=i.user_id) }}"class="px-4 py-3 text-base font-medium text-white bg-gray-500 rounded-md">Details</a>
                   <a href="{{ url_for('users_update_page', key=i.user_id) }}" class="px-4 py-3 text-base font-medium text-white bg-blue-500 rounded-md">Update</a>
                   <a href="{{ url_for('users_delete_page', key=i.user_id) }}" class="px-4 py-3 text-base font-medium text-white bg-red-500 rounded-md">Delete</a>
                 </td>

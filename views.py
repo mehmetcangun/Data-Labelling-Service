@@ -169,7 +169,9 @@ DB_URL = os.getenv("DATABASE_URL")
 
 def update_whole_points(user_id):
   query = """
-    update users set points = (select SUM(points) from (select for_contribution + correctness * COALESCE((
+    update users set points =
+    CASE WHEN ((select count(*) from contributions where contributions.user_id = %s) = 0) THEN 0
+    ELSE (select SUM(points) from (select for_contribution + correctness * COALESCE((
            select count((domain_id, image_id))
            FROM (select l.label_id, l.image_id, d.domain_id, is_correct
                     from labels as l
@@ -189,7 +191,7 @@ def update_whole_points(user_id):
              and image_id = l.image_id
              and is_correct = true
            group by domain_id, image_id
-       ), 0) - wrongness * count((d.domain_id, l.image_id)) - COALESCE((
+       ), 0) - wrongness * (count((d.domain_id, l.image_id)) - COALESCE((
        select count((domain_id, image_id))
        FROM (select l.label_id, l.image_id, d.domain_id, is_correct
                 from labels as l
@@ -209,18 +211,22 @@ def update_whole_points(user_id):
          and image_id = l.image_id
          and is_correct = true
        group by domain_id, image_id
-   ), 0) as points
+   ), 0)) as points
       from labels as l
                inner join subdomains as s on s.subdomain_id = l.subdomain_id
                inner join domains as d on d.domain_id = s.domain_id
                inner join images as i on i.image_id = l.image_id
                inner join criterias as c on c.criteria_id = i.criteria_id
       group by l.image_id, d.domain_id, c.criteria_id
-) as result) where user_id = %s
+) as result)
+END
+
+where user_id = %s
+
   """
   with dbapi2.connect(DB_URL) as connection:
     with connection.cursor() as cursor:
-      cursor.execute(query, (user_id, user_id, user_id, ))
+      cursor.execute(query, (user_id, user_id, user_id, user_id, ))
       connection.commit()
 
 def home_page():
@@ -339,7 +345,7 @@ def contribute_add_page(image_id, domain_id=None):
 def profile_page(user_id=None):
   profile_id = current_user.uid if user_id is None and current_user.is_authenticated else user_id
   update_whole_points(profile_id)
-  
+
   db_ = Database()
   profile_info = db_.select_query_by_id(profile_id, "users", "user_id")
   parameters = [profile_id]
