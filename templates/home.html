@@ -3,7 +3,7 @@
 {% block content %}
 
   <h1 class="text-4xl rounded-xl font-bold p-10 text-center font-mono uppercase bg-gradient-to-br from-green-400 to-blue-500 text-white shadow-inner">Data Labelling Service</h1>
-  <div class="grid gap-4 my-10 grid-flow-col auto-cols-max">
+  <div class="grid gap-4 my-10  grid-cols-5">
     {% for i in data %}
       <div class="justify-center border-3 border-dotted border-light-blue-500">
         <img src="{{ i.url_path }}" alt="" width="250" height="150" class="my-2"/>
