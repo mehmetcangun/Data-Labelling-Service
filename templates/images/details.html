@@ -16,7 +16,7 @@
 
     <div class="flex justify-center gap-10">
       <p class="my-10">
-        <a class="bg-indigo-900 text-white px-10 py-5" href="{{ url_for('profile_page', key=data.user_id) }}" target="_self">User Details</a>
+        <a class="bg-indigo-900 text-white px-10 py-5" href="{{ url_for('profile_page', user_id=data.user_id) }}" target="_self">User Details</a>
       </p>
       <p class="my-10">
         <a class="bg-blue-900 text-white px-10 py-5" href="{{ url_for('criterias_details_page', key=data.criteria_id) }}" target="_self">Criteria Details</a>
