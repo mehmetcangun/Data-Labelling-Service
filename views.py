@@ -1,4 +1,4 @@
-from flask import current_app, flash, redirect, url_for, render_template, request, abort
+from flask import current_app, redirect, url_for, render_template, request, abort
 from forms import LoginForm, UsersEdit, ChangePasswordForm, DomainsForm, SubdomainsForm, CriteriasForm, ImagesForm, LabelsForm, UsersForm
 
 from flask_login import login_user, logout_user, login_required, current_user, UserMixin
@@ -24,10 +24,10 @@ class User(UserMixin):
     return self.uid
 
 def login_page():
+  message = None
   form = LoginForm()
   if form.validate_on_submit():
     email = form['email'].data
-    print("EMAIL: ", email)
     user = get_user(email)
     if user is not None:
       password = form["password"].data
@@ -47,9 +47,8 @@ def login_page():
         db_.update(data)
         next_url = request.args.get('next', url_for("home_page"))
         return redirect(next_url)
-      flash("Invalid credentials.")
-    flash("Invalid credentials.")
-  return render_template("login.html", data=form)
+    message = "Invalid credentials."
+  return render_template("login.html", data=form, message=message)
 
 def get_user(user_email):
   db = Database()
@@ -556,7 +555,6 @@ def users_change_password_page():
   message = ""
   if form.validate_on_submit():
     message, detectkey = form.save()
-    flash(message)
     if detectkey > 0:
       return redirect(url_for("logout_page"))
   form.init()
@@ -572,7 +570,6 @@ def users_update_page(key):
   message = ""
   if form.validate_on_submit():
     message, detectkey = form.save()
-    flash(message)
     if detectkey > 0:
       return redirect(url_for("profile_page"))
   form.init_data()
