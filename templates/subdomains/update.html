@@ -21,7 +21,6 @@
 
     {% if data.domains %}
       <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">Change Domain</h2>
-        {{ data.domains }}
       <select name="domain_select" size="4" class="mx-auto">
         {% for i in data.domains %}
           {% if i.domain_id == data.domain_id %}
