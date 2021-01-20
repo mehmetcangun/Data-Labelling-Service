@@ -14,7 +14,7 @@
         <div class="w-2/3">
           {% if state_key == 1 %}
             <h2 class="py-2 text-lg text-center bg-gray-100 mx-36">
-              Choose the subdomain from subdomains.
+              {{ state|striptags|title }}
             </h2>
             <form method="post" action="{{ request.path }}" class="text-center">          
               <div class="p-2 my-2 leading-8 bg-gray-100 w-2/3 text-center mx-auto">
