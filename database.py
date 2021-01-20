@@ -35,7 +35,7 @@ select_query = {
         %s
         group by u.user_id""",
   'images': """select i.image_id as image_id, title, url_path, 
-        count(c.contribution_id) as user_contribution, most_contribution, classification_type,
+        count(distinct c.user_id) as user_contribution, most_contribution, classification_type,
         case
            when is_favourite = false THEN 'No'
            ELSE 'Yes'
